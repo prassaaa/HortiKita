@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "644315844114",
+    "project_id": "horticultureapp-bf6cb",
+    "storage_bucket": "horticultureapp-bf6cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644315844114:android:328f57d80d0c474ba512cb",
+        "android_client_info": {
+          "package_name": "com.example.hortikultura_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx0dvl9V-a-aqPw-vhiQQOGoIQnVY29UU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
