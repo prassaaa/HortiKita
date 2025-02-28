@@ -1,16 +1,17 @@
-# hortikultura_app
+# HortikulturaApp - Smart Plan Care with Chatbot
 
-A new Flutter project.
+Welcome! This project actually is for Sarjana's Thesis
 
 ## Getting Started
 
 This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Chatbot:**
+- **Article:**
+- **Plant Information:**
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Feedback and Support
+
+Have feedback or need support? Please reach out to us at [me@prasaa](mailto:me@pras.ari69@gmail.com).
