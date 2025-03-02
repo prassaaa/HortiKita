@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/chat_provider.dart';
-// Removed unused import
+import '../../../data/models/chat_message_model.dart';
 import '../../widgets/chatbot/chat_bubble_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatbotScreen extends StatefulWidget {
-  const ChatbotScreen({super.key});
+  const ChatbotScreen({Key? key}) : super(key: key);
 
   @override
-  ChatbotScreenState createState() => ChatbotScreenState();
+  _ChatbotScreenState createState() => _ChatbotScreenState();
 }
 
-class ChatbotScreenState extends State<ChatbotScreen> {
+class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -39,21 +40,26 @@ class ChatbotScreenState extends State<ChatbotScreen> {
     final message = _messageController.text.trim();
     if (message.isEmpty) return;
 
-    final userId = Provider.of<AuthProvider>(context, listen: false).currentUser?.uid;
-    if (userId == null) return;
-
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest_user";
+    
     _messageController.clear();
     
     await Provider.of<ChatProvider>(context, listen: false).sendMessage(userId, message);
     
     // Scroll to bottom
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 100,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    _scrollToBottom();
+  }
+  
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -69,8 +75,26 @@ class ChatbotScreenState extends State<ChatbotScreen> {
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, child) {
                 if (chatProvider.messages.isEmpty) {
-                  return const Center(
-                    child: Text('Tanyakan sesuatu tentang tanaman hortikultura!'),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.chat,
+                          size: 64,
+                          color: Colors.green.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Tanyakan sesuatu tentang tanaman hortikultura!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 
@@ -107,7 +131,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withAlpha((0.1 * 255).toInt()),
+                  color: Colors.grey.withOpacity(0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -128,13 +152,21 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                     minLines: 1,
                     maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 const SizedBox(width: 8),
-                FloatingActionButton(
-                  onPressed: _sendMessage,
-                  mini: true,
-                  child: const Icon(Icons.send),
+                Consumer<ChatProvider>(
+                  builder: (context, chatProvider, child) {
+                    return FloatingActionButton(
+                      onPressed: chatProvider.isLoading ? null : _sendMessage,
+                      mini: true,
+                      backgroundColor: chatProvider.isLoading ? Colors.grey : Colors.green,
+                      child: Icon(
+                        chatProvider.isLoading ? Icons.hourglass_empty : Icons.send,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

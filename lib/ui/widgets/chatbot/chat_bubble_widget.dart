@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -39,12 +40,40 @@ class ChatBubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message,
-                    style: TextStyle(
-                      color: isMe ? Colors.black87 : Colors.black87,
-                      fontSize: 15,
+                  // Gunakan MarkdownBody untuk render Markdown
+                  MarkdownBody(
+                    data: message,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 15,
+                        height: 1.4,
+                      ),
+                      strong: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      em: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                      ),
+                      h1: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      h2: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      h3: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      listBullet: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 15,
+                      ),
                     ),
+                    selectable: true,
                   ),
                   const SizedBox(height: 4),
                   Text(

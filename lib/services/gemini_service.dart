@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  // Gunakan endpoint sesuai dengan model gemini-2.0-flash
+  // Gunakan endpoint sesuai dengan model yang valid
   final String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   final String _apiKey;
 
@@ -52,6 +52,12 @@ class GeminiService {
     4. Pemilihan tanaman yang sesuai dengan kondisi lahan
     5. Teknik panen dan pasca panen untuk hasil maksimal
     
+    Gunakan markdown untuk memformat respons Anda:
+    - Judul dengan awalan # atau ## 
+    - Bagian penting dengan **teks tebal**
+    - Penekanan dengan *teks miring*
+    - Daftar dengan - atau 1. 2. 3.
+    
     Pertanyaan pengguna: $userQuery
     
     Berikan jawaban yang lengkap, informatif, dan mudah dipahami oleh orang awam.
@@ -60,12 +66,42 @@ class GeminiService {
 
   String _extractResponseText(Map<String, dynamic> data) {
     try {
-      // Struktur respons dari gemini-2.0-flash
-      return data['candidates'][0]['content']['parts'][0]['text'];
+      String text = data['candidates'][0]['content']['parts'][0]['text'];
+      
+      // Perbaiki format Markdown jika diperlukan
+      return _fixMarkdownFormat(text);
     } catch (e) {
       print('Error extracting response: $e');
       print('Response data structure: $data');
       return 'Maaf, terjadi kesalahan dalam memproses respons. Silakan coba lagi.';
     }
   }
+  
+  // Fungsi untuk memperbaiki format Markdown
+  String _fixMarkdownFormat(String text) {
+  // replaceAllMapped
+  text = text.replaceAllMapped(
+    RegExp(r'(\w)\*\*(\w)'),
+    (match) => '${match.group(1)} **${match.group(2)}'
+  );
+  
+  text = text.replaceAllMapped(
+    RegExp(r'(\w)\*\*\s'),
+    (match) => '${match.group(1)}** '
+  );
+  
+  // Untuk format miring
+  text = text.replaceAllMapped(
+    RegExp(r'(\w)\*(\w)'),
+    (match) => '${match.group(1)} *${match.group(2)}'
+  );
+  
+  // Untuk nomor list
+  text = text.replaceAllMapped(
+    RegExp(r'(\d+)\.(\w)'),
+    (match) => '${match.group(1)}. ${match.group(2)}'
+  );
+  
+  return text;
+}
 }
