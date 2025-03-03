@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/auth_provider.dart' as local_auth;
 import '../../../data/providers/chat_provider.dart';
 import '../../../data/models/chat_message_model.dart';
 import '../../widgets/chatbot/chat_bubble_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatbotScreen extends StatefulWidget {
-  const ChatbotScreen({Key? key}) : super(key: key);
+  const ChatbotScreen({super.key});
 
   @override
-  _ChatbotScreenState createState() => _ChatbotScreenState();
+  ChatbotScreenState createState() => ChatbotScreenState();
 }
 
-class _ChatbotScreenState extends State<ChatbotScreen> {
+class ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    // Tambahkan di sini untuk load chat history
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   final userId = Provider.of<AuthProvider>(context, listen: false).currentUser?.uid;
-    //   if (userId != null) {
-    //     Provider.of<ChatProvider>(context, listen: false).loadChatHistory(userId);
-    //   }
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = Provider.of<local_auth.AuthProvider>(context, listen: false).currentUser?.uid;
+    if (userId != null) {
+    Provider.of<ChatProvider>(context, listen: false).loadChatHistory(userId);
+     }
+    });
   }
 
   @override
@@ -82,7 +81,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         Icon(
                           Icons.chat,
                           size: 64,
-                          color: Colors.green.withOpacity(0.5),
+                          color: Colors.green.withAlpha((0.5 * 255).toInt()),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -131,7 +130,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withAlpha((0.1 * 255).toInt()),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
