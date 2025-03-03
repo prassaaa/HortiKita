@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../data/providers/article_provider.dart';
 import '../../../data/models/article_model.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ArticleDetailScreen extends StatefulWidget {
   final String articleId;
@@ -245,15 +246,48 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                   ],
                   
                   // Article content
-                  Text(
-                    _article!.content,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.6,
+                  MarkdownBody(
+                    data: _article!.content,
+                    styleSheet: MarkdownStyleSheet(
+                      p: const TextStyle(
+                        fontSize: 16,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      strong: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      em: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                        height: 1.6,
+                      ),
+                      h1: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      h2: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      h3: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      listBullet: const TextStyle(
+                        fontSize: 16,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
                     ),
-                    textAlign: TextAlign.justify,
+                    selectable: true,
                   ),
-                  
                   const SizedBox(height: 32),
                 ],
               ),
