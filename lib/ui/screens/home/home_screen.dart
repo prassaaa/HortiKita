@@ -6,6 +6,7 @@ import '../auth/login_screen.dart';
 import '../plants/plants_screen.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../articles/articles_screen.dart';
+import '../articles/article_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -32,18 +33,6 @@ class HomeScreen extends StatelessWidget {
             fontSize: 24,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: primaryGreen),
-            onPressed: () async {
-              await authProvider.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -128,7 +117,7 @@ class HomeScreen extends StatelessWidget {
               
               // Feature cards
               SizedBox(
-                height: 150, // Adjusted height to match card height
+                height: 150,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -214,12 +203,12 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              // StreamBuilder untuk mengambil artikel dari Firestore
+              // StreamBuilder untuk mengambil artikel dari Firestore (hanya 1 artikel)
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('articles')
                     .orderBy('publishedAt', descending: true)
-                    .limit(3)
+                    .limit(1)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -270,35 +259,29 @@ class HomeScreen extends StatelessWidget {
                     );
                   }
                   
-                  return Column(
-                    children: articles.map((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final title = data['title'] ?? 'Artikel';
-                      final description = data['description'] ?? 'Tidak ada deskripsi';
-                      final imageUrl = data['imageUrl'] ?? '';
-                      final publishDate = data['publishedAt'] != null 
-                          ? (data['publishedAt'] as Timestamp).toDate()
-                          : DateTime.now();
-                      
-                      return Column(
-                        children: [
-                          _buildArticleCard(
-                            title,
-                            description,
-                            imageUrl,
-                            publishDate,
-                            primaryGreen,
-                            lightGreen,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    }).toList(),
+                  // Ambil data dari dokumen pertama saja
+                  final doc = articles.first;
+                  final docId = doc.id;
+                  final data = doc.data() as Map<String, dynamic>;
+                  final title = data['title'] ?? 'Artikel';
+                  final imageUrl = data['imageUrl'] ?? '';
+                  final publishDate = data['publishedAt'] != null 
+                      ? (data['publishedAt'] as Timestamp).toDate()
+                      : DateTime.now();
+                  
+                  return _buildArticleCard(
+                    context,
+                    title,
+                    imageUrl,
+                    publishDate,
+                    primaryGreen,
+                    lightGreen,
+                    docId,
                   );
                 },
               ),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Center(
                 child: OutlinedButton(
                   onPressed: () {
@@ -327,51 +310,79 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: primaryGreen,
-        unselectedItemColor: Colors.grey,
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Beranda',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              spreadRadius: 0,
+              offset: const Offset(0, -5),
+            ),
+          ],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.eco_outlined),
-            activeIcon: Icon(Icons.eco),
-            label: 'Tanaman',
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.home, color: primaryGreen, size: 26),
+                  label: const Text(
+                    'Beranda',
+                    style: TextStyle(
+                      color: primaryGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: lightGreen,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () async {
+                    await authProvider.signOut();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.white, size: 26),
+                  label: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: primaryGreen,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'Chatbot',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-        onTap: (index) {
-          // Handle navigation based on index
-          switch (index) {
-            case 1:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PlantsScreen()),
-              );
-              break;
-            case 2:
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-              );
-              break;
-            // Add other cases as needed
-          }
-        },
+        ),
       ),
     );
   }
@@ -389,7 +400,7 @@ class HomeScreen extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 180,
-        height: 150, // Fixed height to prevent overflow
+        height: 150,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -403,35 +414,35 @@ class HomeScreen extends StatelessWidget {
           ],
           border: Border.all(color: background, width: 1.5),
         ),
-        padding: const EdgeInsets.all(14), // Reduced padding
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // Use minimum space needed
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8), // Reduced padding
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: background,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                size: 24, // Smaller icon
+                size: 24,
                 color: primary,
               ),
             ),
-            const SizedBox(height: 12), // Reduced spacing
+            const SizedBox(height: 12),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 15, // Slightly smaller font
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF2E7D32),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4), // Reduced spacing
+            const SizedBox(height: 4),
             Flexible(
               child: Text(
                 description,
@@ -450,12 +461,13 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildArticleCard(
+    BuildContext context,
     String title,
-    String description,
     String imageUrl,
     DateTime publishDate,
     Color primary,
     Color background,
+    String articleId,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -473,7 +485,6 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image from Firebase Storage
           ClipRRect(
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
@@ -571,20 +582,19 @@ class HomeScreen extends StatelessWidget {
                     color: Color(0xFF2E7D32),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ArticleDetailScreen(articleId: articleId),
+                          ),
+                        );
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: primary,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
