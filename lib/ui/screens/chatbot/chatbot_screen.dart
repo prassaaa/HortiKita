@@ -80,12 +80,6 @@ class ChatbotScreenState extends State<ChatbotScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryGreen),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: const Text(
           'Asisten Hortikultura',
           style: TextStyle(
