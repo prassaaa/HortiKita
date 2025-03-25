@@ -12,26 +12,35 @@ class PlantDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Definisi warna tema yang sama
+    const Color primaryGreen = Color(0xFF4CAF50);
+    const Color lightGreen = Color(0xFFE8F5E9);
+    const Color whiteColor = Colors.white;
+
     return Scaffold(
+      backgroundColor: whiteColor,
       body: CustomScrollView(
         slivers: [
           // App bar with image
           SliverAppBar(
             expandedHeight: 250,
             pinned: true,
+            backgroundColor: whiteColor,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(plant.name),
               background: CachedNetworkImage(
                 imageUrl: plant.imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[300],
+                  color: lightGreen,
                   child: const Icon(
                     Icons.error,
                     color: Colors.red,
+                    size: 48,
                   ),
                 ),
               ),
@@ -40,144 +49,147 @@ class PlantDetailScreen extends StatelessWidget {
           
           // Content
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Scientific name
-                  Text(
-                    plant.scientificName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey[700],
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                    offset: const Offset(0, -5),
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Summary info (tags)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildInfoChip('Kategori: ${plant.category}', Icons.category),
-                      _buildInfoChip('Kesulitan: ${plant.difficulty}', Icons.trending_up),
-                      _buildInfoChip('Durasi Tumbuh: ${plant.growthDuration} hari', Icons.access_time),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Description
-                  const Text(
-                    'Deskripsi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    plant.description,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.justify,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Planting Requirements
-                  const Text(
-                    'Kebutuhan Tanam',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildRequirementItem(
-                    'Kebutuhan Air',
-                    plant.wateringFrequency,
-                    Icons.water_drop,
-                    Colors.blue,
-                  ),
-                  _buildRequirementItem(
-                    'Kebutuhan Cahaya',
-                    plant.sunlightRequirement,
-                    Icons.wb_sunny,
-                    Colors.orange,
-                  ),
-                  _buildRequirementItem(
-                    'Jenis Tanah',
-                    plant.soilType,
-                    Icons.landscape,
-                    Colors.brown,
-                  ),
-                  _buildRequirementItem(
-                    'Waktu Panen',
-                    plant.harvestTime,
-                    Icons.calendar_today,
-                    Colors.green,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Benefits
-                  const Text(
-                    'Manfaat',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    plant.benefits,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.justify,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Planting Steps
-                  const Text(
-                    'Cara Menanam',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ...plant.plantingSteps.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final step = entry.value;
-                    return _buildStepItem(
-                      index + 1,
-                      step['title'],
-                      step['description'],
-                    );
-                  }).toList(),
-                  const SizedBox(height: 24),
-                  
-                  // Care Instructions
-                  const Text(
-                    'Perawatan',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ...plant.careInstructions.map((instruction) {
-                    return _buildCareItem(
-                      instruction['title'],
-                      instruction['description'],
-                    );
-                  }).toList(),
-                  const SizedBox(height: 32),
                 ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Plant Name
+                    Text(
+                      plant.name,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Scientific name
+                    Text(
+                      plant.scientificName,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Summary info (tags)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildInfoChip('Kategori: ${plant.category}', Icons.category, primaryGreen, lightGreen),
+                        _buildInfoChip('Kesulitan: ${plant.difficulty}', Icons.trending_up, primaryGreen, lightGreen),
+                        _buildInfoChip('Durasi Tumbuh: ${plant.growthDuration} hari', Icons.access_time, primaryGreen, lightGreen),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Description
+                    _buildSectionTitle('Deskripsi', primaryGreen),
+                    const SizedBox(height: 8),
+                    Text(
+                      plant.description,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.grey[800],
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Planting Requirements
+                    _buildSectionTitle('Kebutuhan Tanam', primaryGreen),
+                    const SizedBox(height: 16),
+                    _buildRequirementItem(
+                      'Kebutuhan Air',
+                      plant.wateringFrequency,
+                      Icons.water_drop,
+                      Colors.blue,
+                    ),
+                    _buildRequirementItem(
+                      'Kebutuhan Cahaya',
+                      plant.sunlightRequirement,
+                      Icons.wb_sunny,
+                      Colors.orange,
+                    ),
+                    _buildRequirementItem(
+                      'Jenis Tanah',
+                      plant.soilType,
+                      Icons.landscape,
+                      Colors.brown,
+                    ),
+                    _buildRequirementItem(
+                      'Waktu Panen',
+                      plant.harvestTime,
+                      Icons.calendar_today,
+                      primaryGreen,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Benefits
+                    _buildSectionTitle('Manfaat', primaryGreen),
+                    const SizedBox(height: 8),
+                    Text(
+                      plant.benefits,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.grey[800],
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Planting Steps
+                    _buildSectionTitle('Cara Menanam', primaryGreen),
+                    const SizedBox(height: 16),
+                    ...plant.plantingSteps.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final step = entry.value;
+                      return _buildStepItem(
+                        index + 1,
+                        step['title'],
+                        step['description'],
+                        primaryGreen,
+                      );
+                    }).toList(),
+                    const SizedBox(height: 24),
+                    
+                    // Care Instructions
+                    _buildSectionTitle('Perawatan', primaryGreen),
+                    const SizedBox(height: 16),
+                    ...plant.careInstructions.map((instruction) {
+                      return _buildCareItem(
+                        instruction['title'],
+                        instruction['description'],
+                        lightGreen,
+                        whiteColor,
+                      );
+                    }).toList(),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
           ),
@@ -186,15 +198,34 @@ class PlantDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(String text, IconData icon) {
+  Widget _buildSectionTitle(String title, Color primaryGreen) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: primaryGreen,
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(String text, IconData icon, Color primaryGreen, Color lightGreen) {
     return Chip(
-      label: Text(text),
+      label: Text(
+        text,
+        style: const TextStyle(color: Color(0xFF558B2F)),
+      ),
       avatar: Icon(
         icon,
         size: 16,
-        color: Colors.green,
+        color: primaryGreen,
       ),
-      backgroundColor: Colors.green[50],
+      backgroundColor: lightGreen,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 1,
+      shadowColor: Colors.grey.withOpacity(0.2),
     );
   }
 
@@ -208,10 +239,17 @@ class PlantDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 24,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -223,6 +261,7 @@ class PlantDetailScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: Color(0xFF2E7D32),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -241,18 +280,18 @@ class PlantDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStepItem(int number, String title, String description) {
+  Widget _buildStepItem(int number, String title, String description, Color primaryGreen) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(14),
+              color: primaryGreen,
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
               child: Text(
@@ -260,6 +299,7 @@ class PlantDetailScreen extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -274,6 +314,7 @@ class PlantDetailScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: Color(0xFF2E7D32),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -293,10 +334,14 @@ class PlantDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCareItem(String title, String description) {
+  Widget _buildCareItem(String title, String description, Color lightGreen, Color whiteColor) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
+      elevation: 2,
+      color: lightGreen,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -307,6 +352,7 @@ class PlantDetailScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
+                color: Color(0xFF2E7D32),
               ),
             ),
             const SizedBox(height: 8),
@@ -314,7 +360,7 @@ class PlantDetailScreen extends StatelessWidget {
               description,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[700],
+                color: Colors.grey[800],
                 height: 1.4,
               ),
             ),

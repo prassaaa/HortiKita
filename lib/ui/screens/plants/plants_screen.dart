@@ -14,7 +14,7 @@ class PlantsScreen extends StatefulWidget {
 
 class _PlantsScreenState extends State<PlantsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -22,7 +22,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
       Provider.of<PlantProvider>(context, listen: false).fetchAllPlants();
     });
   }
-  
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -31,12 +31,28 @@ class _PlantsScreenState extends State<PlantsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Definisi warna tema yang sama
+    const Color primaryGreen = Color(0xFF4CAF50);
+    const Color lightGreen = Color(0xFFE8F5E9);
+    const Color whiteColor = Colors.white; // Mengganti 'white' menjadi 'whiteColor' untuk menghindari konflik
+
     return Scaffold(
+      backgroundColor: whiteColor,
       appBar: AppBar(
-        title: const Text('Katalog Tanaman'),
+        elevation: 0,
+        backgroundColor: whiteColor,
+        title: const Text(
+          'Katalog Tanaman',
+          style: TextStyle(
+            color: primaryGreen,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: primaryGreen),
             onPressed: () {
               showSearch(
                 context: context,
@@ -52,14 +68,25 @@ class _PlantsScreenState extends State<PlantsScreen> {
           Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: whiteColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Consumer<PlantProvider>(
               builder: (context, plantProvider, child) {
                 return ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildCategoryChip('Semua', plantProvider),
+                    _buildCategoryChip('Semua', plantProvider, primaryGreen, lightGreen, whiteColor),
                     ..._getCategoriesFromConstants().map((category) {
-                      return _buildCategoryChip(category, plantProvider);
+                      return _buildCategoryChip(category, plantProvider, primaryGreen, lightGreen, whiteColor);
                     }).toList(),
                   ],
                 );
@@ -73,7 +100,9 @@ class _PlantsScreenState extends State<PlantsScreen> {
               builder: (context, plantProvider, child) {
                 if (plantProvider.isLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+                    ),
                   );
                 }
                 
@@ -92,7 +121,16 @@ class _PlantsScreenState extends State<PlantsScreen> {
                           onPressed: () {
                             plantProvider.fetchAllPlants();
                           },
-                          child: const Text('Coba Lagi'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryGreen,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Coba Lagi',
+                            style: TextStyle(color: whiteColor),
+                          ),
                         ),
                       ],
                     ),
@@ -106,14 +144,26 @@ class _PlantsScreenState extends State<PlantsScreen> {
                       children: [
                         const Text(
                           'Tidak ada data tanaman tersedia',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF558B2F),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
                             plantProvider.addSamplePlants();
                           },
-                          child: const Text('Tambah Data Sampel'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryGreen,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Tambah Data Sampel',
+                            style: TextStyle(color: whiteColor),
+                          ),
                         ),
                       ],
                     ),
@@ -151,32 +201,74 @@ class _PlantsScreenState extends State<PlantsScreen> {
     try {
       return AppConstants.plantCategories;
     } catch (e) {
-      // Fallback if constants not available
       return ['Sayuran', 'Buah', 'Tanaman Hias', 'Rempah', 'Lainnya'];
     }
   }
 
-  Widget _buildCategoryChip(String category, PlantProvider plantProvider) {
+  Widget _buildCategoryChip(
+    String category,
+    PlantProvider plantProvider,
+    Color primaryGreen,
+    Color lightGreen,
+    Color whiteColor,
+  ) {
     final isSelected = plantProvider.selectedCategory == category;
     
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(category),
+        label: Text(
+          category,
+          style: TextStyle(
+            color: isSelected ? whiteColor : primaryGreen,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
         selected: isSelected,
         onSelected: (selected) {
           if (selected) {
             plantProvider.setSelectedCategory(category);
           }
         },
-        backgroundColor: Colors.grey[200],
-        selectedColor: Colors.green[100],
+        backgroundColor: lightGreen,
+        selectedColor: primaryGreen,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: isSelected ? 2 : 0,
+        shadowColor: Colors.grey.withOpacity(0.3),
       ),
     );
   }
 }
 
 class PlantSearchDelegate extends SearchDelegate<String> {
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return ThemeData(
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        titleTextStyle: TextStyle(
+          color: Color(0xFF4CAF50),
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: IconThemeData(color: Color(0xFF4CAF50)),
+      ),
+      textTheme: Theme.of(context).textTheme,
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFE8F5E9),
+        hintStyle: const TextStyle(color: Color(0xFF558B2F)),
+      ),
+    );
+  }
+
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -203,11 +295,13 @@ class PlantSearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     if (query.length < 2) {
       return const Center(
-        child: Text('Masukkan minimal 2 karakter untuk mencari'),
+        child: Text(
+          'Masukkan minimal 2 karakter untuk mencari',
+          style: TextStyle(color: Color(0xFF558B2F)),
+        ),
       );
     }
     
-    // Call search in provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PlantProvider>(context, listen: false).searchPlants(query);
     });
@@ -216,13 +310,18 @@ class PlantSearchDelegate extends SearchDelegate<String> {
       builder: (context, plantProvider, child) {
         if (plantProvider.isLoading) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+            ),
           );
         }
         
         if (plantProvider.searchResults.isEmpty) {
           return Center(
-            child: Text('Tidak ada hasil untuk "$query"'),
+            child: Text(
+              'Tidak ada hasil untuk "$query"',
+              style: const TextStyle(color: Color(0xFF558B2F)),
+            ),
           );
         }
         
@@ -254,17 +353,22 @@ class PlantSearchDelegate extends SearchDelegate<String> {
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) {
       return const Center(
-        child: Text('Cari tanaman...'),
+        child: Text(
+          'Cari tanaman...',
+          style: TextStyle(color: Color(0xFF558B2F)),
+        ),
       );
     }
     
     if (query.length < 2) {
       return const Center(
-        child: Text('Masukkan minimal 2 karakter untuk mencari'),
+        child: Text(
+          'Masukkan minimal 2 karakter untuk mencari',
+          style: TextStyle(color: Color(0xFF558B2F)),
+        ),
       );
     }
     
-    // Show instant results for suggestions too
     return buildResults(context);
   }
 }

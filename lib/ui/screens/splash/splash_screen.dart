@@ -40,46 +40,73 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Definisi warna tema yang sama dengan layar lainnya
+    const Color primaryGreen = Color(0xFF4CAF50);
+    const Color lightGreen = Color(0xFFE8F5E9);
+    const Color white = Colors.white;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Logo placeholder (ganti dengan logo Anda)
+            // Logo dengan desain modern
             Container(
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: Colors.green[100],
-                borderRadius: BorderRadius.circular(20),
+                color: lightGreen,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Icon(
-                Icons.eco,
-                size: 80,
-                color: Colors.green[700],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Hortikultura App',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Optimalkan Pekarangan Rumahmu',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+              child: const Center(
+                child: Icon(
+                  Icons.eco,
+                  size: 90,
+                  color: primaryGreen,
+                ),
               ),
             ),
             const SizedBox(height: 32),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            
+            // Judul aplikasi
+            const Text(
+              'Hortikultura App',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2E7D32), // Warna teks utama yang konsisten
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Subjudul
+            const Text(
+              'Optimalkan Pekarangan Rumahmu',
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF558B2F), // Warna teks sekunder yang konsisten
+              ),
+            ),
+            const SizedBox(height: 40),
+            
+            // Indikator loading
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+                strokeWidth: 4,
+              ),
             ),
           ],
         ),
