@@ -10,15 +10,15 @@ class ArticleDetailScreen extends StatefulWidget {
   final String articleId;
 
   const ArticleDetailScreen({
-    Key? key,
+    super.key,
     required this.articleId,
-  }) : super(key: key);
+  });
 
   @override
-  _ArticleDetailScreenState createState() => _ArticleDetailScreenState();
+  ArticleDetailScreenState createState() => ArticleDetailScreenState();
 }
 
-class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
+class ArticleDetailScreenState extends State<ArticleDetailScreen> {
   Article? _article;
   bool _isLoading = true;
   String _errorMessage = '';

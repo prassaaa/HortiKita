@@ -6,13 +6,13 @@ import '../../widgets/articles/article_card_widget.dart';
 import 'article_detail_screen.dart';
 
 class ArticlesScreen extends StatefulWidget {
-  const ArticlesScreen({Key? key}) : super(key: key);
+  const ArticlesScreen({super.key});
 
   @override
-  _ArticlesScreenState createState() => _ArticlesScreenState();
+  ArticlesScreenState createState() => ArticlesScreenState();
 }
 
-class _ArticlesScreenState extends State<ArticlesScreen> {
+class ArticlesScreenState extends State<ArticlesScreen> {
   @override
   void initState() {
     super.initState();
@@ -52,7 +52,7 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
                     _buildCategoryChip('Semua', articleProvider),
                     ..._getCategoriesFromConstants().map((category) {
                       return _buildCategoryChip(category, articleProvider);
-                    }).toList(),
+                    }),
                   ],
                 );
               },
