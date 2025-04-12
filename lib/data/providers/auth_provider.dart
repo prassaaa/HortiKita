@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
   
   UserModel? _userModel;
   bool _isLoading = false;
@@ -75,7 +77,7 @@ class AuthProvider with ChangeNotifier {
         _userModel = newUser;
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      _logger.e('Error fetching user data: $e');
       _error = e.toString();
       _userModel = null;
     } finally {
@@ -115,6 +117,7 @@ class AuthProvider with ChangeNotifier {
       await Future.delayed(const Duration(milliseconds: 500));
       await _fetchUserData();
     } catch (e) {
+      _logger.e('Error during sign up: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -136,6 +139,7 @@ class AuthProvider with ChangeNotifier {
       
       // Data will be fetched by the auth state listener
     } catch (e) {
+      _logger.e('Error during sign in: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -154,7 +158,7 @@ class AuthProvider with ChangeNotifier {
       _userModel = null;
     } catch (e) {
       _error = e.toString();
-      print('Error signing out: $e');
+      _logger.e('Error signing out: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -192,7 +196,7 @@ class AuthProvider with ChangeNotifier {
       await _fetchUserData();
     } catch (e) {
       _error = e.toString();
-      print('Error updating profile: $e');
+      _logger.e('Error updating profile: $e');
       _isLoading = false;
       notifyListeners();
     }
@@ -207,6 +211,7 @@ class AuthProvider with ChangeNotifier {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
+      _logger.e('Error resetting password: $e');
       _error = e.toString();
       rethrow;
     } finally {

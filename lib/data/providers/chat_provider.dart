@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../models/chat_message_model.dart';
 import '../repositories/chat_repository.dart';
 import '../../services/gemini_service.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository;
+  final Logger _logger = Logger();
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String _error = '';
@@ -26,7 +28,7 @@ class ChatProvider with ChangeNotifier {
     try {
       // Tambahkan pesan user ke list (optimistic update)
       final userMsg = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + '_user',
+        id: '${DateTime.now().millisecondsSinceEpoch}_user',
         sender: 'user',
         message: message,
         timestamp: DateTime.now(),
@@ -39,7 +41,7 @@ class ChatProvider with ChangeNotifier {
 
       // Tambahkan respons AI ke list
       final aiMsg = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + '_ai',
+        id: '${DateTime.now().millisecondsSinceEpoch}_ai',
         sender: 'ai',
         message: response,
         timestamp: DateTime.now(),
@@ -47,7 +49,7 @@ class ChatProvider with ChangeNotifier {
       _messages.add(aiMsg);
     } catch (e) {
       _error = e.toString();
-      print('Error sending message: $_error');
+      _logger.e('Error sending message: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -63,7 +65,7 @@ class ChatProvider with ChangeNotifier {
       _messages = await _chatRepository.getChatHistory(userId);
     } catch (e) {
       _error = e.toString();
-      print('Error loading chat history: $_error');
+      _logger.e('Error loading chat history: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
