@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';  // Perhatikan perubahan di sini
 
 class Plant {
   final String id;
@@ -18,6 +19,9 @@ class Plant {
   final List<Map<String, dynamic>> careInstructions;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Logger statis untuk kelas Plant
+  static final _logger = Logger();  // Logger dari package logger
 
   Plant({
     required this.id,
@@ -48,8 +52,7 @@ class Plant {
       if (data['plantingSteps'] != null) {
         if (data['plantingSteps'] is List) {
           plantingStepsList = (data['plantingSteps'] as List)
-              .where((item) => item is Map<String, dynamic>)
-              .map((item) => item as Map<String, dynamic>)
+              .whereType<Map<String, dynamic>>()
               .toList();
         }
       }
@@ -58,8 +61,7 @@ class Plant {
       if (data['careInstructions'] != null) {
         if (data['careInstructions'] is List) {
           careInstructionsList = (data['careInstructions'] as List)
-              .where((item) => item is Map<String, dynamic>)
-              .map((item) => item as Map<String, dynamic>)
+              .whereType<Map<String, dynamic>>()
               .toList();
         }
       }
@@ -88,8 +90,8 @@ class Plant {
           : DateTime.now(),
       );
     } catch (e) {
-      print('Error parsing Plant document: $e');
-      print('Document data: ${doc.data()}');
+      _logger.e('Error parsing Plant document: $e'); // e untuk error
+      _logger.d('Document data: ${doc.data()}');     // d untuk debug
       rethrow;
     }
   }
