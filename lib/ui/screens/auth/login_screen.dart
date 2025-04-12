@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
 import 'register_screen.dart';
 import '../home/home_screen.dart';
 import '../../../data/providers/auth_provider.dart' as local_auth;
@@ -16,6 +17,7 @@ class LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _logger = Logger();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -33,17 +35,20 @@ class LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await Provider.of<local_auth.AuthProvider>(context, listen: false).signIn(
+        // Buat instance AuthProvider di sini untuk menghindari penggunaan context setelah async
+        final authProvider = Provider.of<local_auth.AuthProvider>(context, listen: false);
+        
+        await authProvider.signIn(
           _emailController.text.trim(),
           _passwordController.text,
         );
 
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
-        }
+        if (!mounted) return;
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       } on FirebaseAuthException catch (e) {
         String errorMessage;
         if (e.code == 'user-not-found') {
@@ -59,8 +64,11 @@ class LoginScreenState extends State<LoginScreen> {
         } else {
           errorMessage = 'Error: ${e.message}';
         }
+        
+        if (!mounted) return;
         _showErrorDialog(errorMessage);
       } catch (e) {
+        if (!mounted) return;
         _showErrorDialog('Terjadi kesalahan: $e');
       } finally {
         if (mounted) {
@@ -99,24 +107,24 @@ class LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
-        child: Center( // Membungkus SingleChildScrollView dengan Center
+        child: Center(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Menempatkan konten di tengah vertikal
-              crossAxisAlignment: CrossAxisAlignment.center, // Menempatkan konten di tengah horizontal
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Header Section
                 Container(
-                  width: double.infinity, // Lebar penuh agar rapi
+                  width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: lightGreen,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withAlpha((0.1 * 255).toInt()),
                         spreadRadius: 1,
                         blurRadius: 5,
                         offset: const Offset(0, 2),
@@ -160,7 +168,7 @@ class LoginScreenState extends State<LoginScreen> {
 
                 // Form Section
                 SizedBox(
-                  width: double.infinity, // Lebar penuh untuk form
+                  width: double.infinity,
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -254,7 +262,7 @@ class LoginScreenState extends State<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              shadowColor: Colors.grey.withOpacity(0.3),
+                              shadowColor: Colors.grey.withAlpha((0.3 * 255).toInt()),
                               elevation: 2,
                             ),
                             child: _isLoading
@@ -321,7 +329,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Reset Password',
@@ -352,40 +360,58 @@ class LoginScreenState extends State<LoginScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Batal', style: TextStyle(color: primaryGreen)),
           ),
           TextButton(
             onPressed: () async {
               final email = resetEmailController.text.trim();
               if (email.isEmpty) {
-                if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
                   const SnackBar(content: Text('Silakan masukkan email')),
                 );
                 return;
               }
 
+              // Simpan referensi ke BuildContext sebelum async
+              final navigatorContext = dialogContext;
+
               try {
                 await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Link reset password telah dikirim ke email Anda'),
-                      backgroundColor: primaryGreen,
-                    ),
-                  );
-                }
+                
+                // Periksa apakah dialog context masih ada
+                if (!mounted) return;
+                
+                // Pop dialog menggunakan navigator dari dialogContext yang disimpan
+                // ignore: use_build_context_synchronously
+                Navigator.pop(navigatorContext);
+                
+                // Gunakan context state untuk Scaffold messenger
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Link reset password telah dikirim ke email Anda'),
+                    backgroundColor: primaryGreen,
+                  ),
+                );
               } catch (e) {
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                _logger.e('Error saat reset password: $e');
+                
+                // Periksa apakah dialog context masih ada
+                if (!mounted) return;
+                
+                // Pop dialog menggunakan navigator dari dialogContext yang disimpan
+                // ignore: use_build_context_synchronously
+                Navigator.pop(navigatorContext);
+                
+                // Gunakan context state untuk Scaffold messenger
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             child: const Text('Kirim', style: TextStyle(color: primaryGreen)),
