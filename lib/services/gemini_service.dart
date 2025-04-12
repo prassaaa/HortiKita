@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 
 class GeminiService {
   // Gunakan endpoint sesuai dengan model yang valid
   final String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   final String _apiKey;
+  final Logger _logger = Logger();
 
   GeminiService(this._apiKey);
 
@@ -32,11 +34,11 @@ class GeminiService {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return _extractResponseText(data);
       } else {
-        print('Error response: ${response.body}');
+        _logger.e('Error response: ${response.body}');
         throw Exception('Failed to get response: ${response.statusCode}');
       }
     } catch (e) {
-      print('Exception during API call: $e');
+      _logger.e('Exception during API call: $e');
       throw Exception('Error communicating with Gemini API: $e');
     }
   }
@@ -71,8 +73,8 @@ class GeminiService {
       // Perbaiki format Markdown jika diperlukan
       return _fixMarkdownFormat(text);
     } catch (e) {
-      print('Error extracting response: $e');
-      print('Response data structure: $data');
+      _logger.e('Error extracting response: $e');
+      _logger.e('Response data structure: $data');
       return 'Maaf, terjadi kesalahan dalam memproses respons. Silakan coba lagi.';
     }
   }

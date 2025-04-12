@@ -2,10 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/models/user_model.dart';
 import 'firebase_service.dart';
+import 'package:logger/logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseService().auth;
   final FirebaseFirestore _firestore = FirebaseService().firestore;
+  final Logger _logger = Logger();
   
   // Get current user
   User? get currentUser => _auth.currentUser;
@@ -86,7 +88,7 @@ class AuthService {
       
       return null;
     } catch (e) {
-      print('Error getting user model: $e');
+      _logger.e('Error getting user model: $e');
       return null;
     }
   }

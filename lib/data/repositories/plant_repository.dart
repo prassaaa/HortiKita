@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 import '../models/plant_model.dart';
 
 class PlantRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
   
   // Mendapatkan semua tanaman
   Future<List<Plant>> getAllPlants() async {
@@ -23,14 +25,14 @@ class PlantRepository {
           Plant plant = Plant.fromFirestore(doc);
           plants.add(plant);
         } catch (e) {
-          print('Error parsing document ${doc.id}: $e');
+          _logger.e('Error parsing document ${doc.id}: $e');
           // Skip invalid documents instead of crashing
         }
       }
       
       return plants;
     } catch (e) {
-      print('Error in getAllPlants: $e');
+      _logger.e('Error in getAllPlants: $e');
       throw Exception('Failed to load plants: $e');
     }
   }
@@ -55,13 +57,13 @@ class PlantRepository {
           Plant plant = Plant.fromFirestore(doc);
           plants.add(plant);
         } catch (e) {
-          print('Error parsing document ${doc.id}: $e');
+          _logger.e('Error parsing document ${doc.id}: $e');
         }
       }
       
       return plants;
     } catch (e) {
-      print('Error in getPlantsByCategory: $e');
+      _logger.e('Error in getPlantsByCategory: $e');
       throw Exception('Failed to load plants by category: $e');
     }
   }
@@ -80,7 +82,7 @@ class PlantRepository {
       
       return Plant.fromFirestore(doc);
     } catch (e) {
-      print('Error in getPlantById: $e');
+      _logger.e('Error in getPlantById: $e');
       throw Exception('Failed to load plant: $e');
     }
   }
@@ -104,7 +106,7 @@ class PlantRepository {
           Plant plant = Plant.fromFirestore(doc);
           allPlants.add(plant);
         } catch (e) {
-          print('Error parsing document ${doc.id}: $e');
+          _logger.e('Error parsing document ${doc.id}: $e');
         }
       }
       
@@ -120,7 +122,7 @@ class PlantRepository {
                descriptionLower.contains(queryLower);
       }).toList();
     } catch (e) {
-      print('Error in searchPlants: $e');
+      _logger.e('Error in searchPlants: $e');
       throw Exception('Failed to search plants: $e');
     }
   }
@@ -163,7 +165,7 @@ class PlantRepository {
       // All sample plants exist
       return false;
     } catch (e) {
-      print('Error checking sample plants: $e');
+      _logger.e('Error checking sample plants: $e');
       return true; // If there's an error, suggest adding sample plants
     }
   }
@@ -243,9 +245,9 @@ class PlantRepository {
         'updatedAt': FieldValue.serverTimestamp()
       });
       
-      print('Sample plants added successfully');
+      _logger.i('Sample plants added successfully');
     } catch (e) {
-      print('Error adding sample plants: $e');
+      _logger.e('Error adding sample plants: $e');
       throw Exception('Failed to add sample plants: $e');
     }
   }
