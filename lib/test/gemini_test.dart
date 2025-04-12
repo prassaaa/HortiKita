@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../services/gemini_service.dart';
+import 'package:logger/logger.dart';
 
 class GeminiTestScreen extends StatefulWidget {
-  const GeminiTestScreen({Key? key}) : super(key: key);
+  const GeminiTestScreen({super.key});
 
   @override
-  _GeminiTestScreenState createState() => _GeminiTestScreenState();
+  GeminiTestScreenState createState() => GeminiTestScreenState();
 }
 
-class _GeminiTestScreenState extends State<GeminiTestScreen> {
+class GeminiTestScreenState extends State<GeminiTestScreen> {
   final TextEditingController _promptController = TextEditingController();
   final String _apiKey = "AIzaSyAI7gekjCmoGZksJBkSE-jf2Mm3lhdsYxc"; // Ganti dengan API key Anda
+  final Logger _logger = Logger();
   String _response = "Respons akan muncul di sini";
   bool _isLoading = false;
 
@@ -34,7 +36,7 @@ class _GeminiTestScreenState extends State<GeminiTestScreen> {
       setState(() {
         _response = "Error: $e";
       });
-      print("Error: $e");
+      _logger.e("Error: $e");
     } finally {
       setState(() {
         _isLoading = false;
