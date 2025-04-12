@@ -9,7 +9,7 @@ import '../articles/articles_screen.dart';
 import '../articles/article_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +300,7 @@ class HomeScreen extends StatelessWidget {
           color: white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               spreadRadius: 0,
               offset: const Offset(0, -5),
@@ -341,11 +341,13 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: TextButton.icon(
                   onPressed: () async {
+                    final navigator = Navigator.of(context);
                     await authProvider.signOut();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
+                    if (navigator.mounted) {
+                      navigator.pushReplacement(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.logout, color: Colors.white, size: 26),
                   label: const Text(
@@ -391,7 +393,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 2),
@@ -460,7 +462,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -486,7 +488,7 @@ class HomeScreen extends StatelessWidget {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: background.withOpacity(0.5),
+                        color: background.withValues(alpha: 0.5),
                         child: Center(
                           child: CircularProgressIndicator(
                             color: primary,
@@ -502,12 +504,12 @@ class HomeScreen extends StatelessWidget {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: background.withOpacity(0.5),
+                        color: background.withValues(alpha: 0.5),
                         child: Center(
                           child: Icon(
                             Icons.error_outline,
                             size: 40,
-                            color: primary.withOpacity(0.6),
+                            color: primary.withValues(alpha: 0.6),
                           ),
                         ),
                       );
@@ -516,12 +518,12 @@ class HomeScreen extends StatelessWidget {
                 : Container(
                     height: 180,
                     width: double.infinity,
-                    color: background.withOpacity(0.5),
+                    color: background.withValues(alpha: 0.5),
                     child: Center(
                       child: Icon(
                         Icons.image,
                         size: 60,
-                        color: primary.withOpacity(0.3),
+                        color: primary.withValues(alpha: 0.3),
                       ),
                     ),
                   ),
