@@ -6,9 +6,9 @@ class PlantDetailScreen extends StatelessWidget {
   final Plant plant;
 
   const PlantDetailScreen({
-    Key? key,
+    super.key,
     required this.plant,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class PlantDetailScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withAlpha((0.1 * 255).toInt()),
                     blurRadius: 10,
                     spreadRadius: 0,
                     offset: const Offset(0, -5),
@@ -173,7 +173,7 @@ class PlantDetailScreen extends StatelessWidget {
                         step['description'],
                         primaryGreen,
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 24),
                     
                     // Care Instructions
@@ -186,7 +186,7 @@ class PlantDetailScreen extends StatelessWidget {
                         lightGreen,
                         whiteColor,
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -225,7 +225,7 @@ class PlantDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 1,
-      shadowColor: Colors.grey.withOpacity(0.2),
+      shadowColor: Colors.grey.withAlpha((0.2 * 255).toInt()),
     );
   }
 
@@ -242,7 +242,7 @@ class PlantDetailScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withAlpha((0.1 * 255).toInt()),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
