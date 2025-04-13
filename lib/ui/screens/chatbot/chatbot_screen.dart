@@ -104,7 +104,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                         Icon(
                           Icons.chat,
                           size: 64,
-                          color: primaryGreen.withOpacity(0.5),
+                          color: primaryGreen.withAlpha((0.5 * 255).toInt()),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -131,7 +131,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                         Icon(
                           Icons.chat,
                           size: 64,
-                          color: primaryGreen.withOpacity(0.5),
+                          color: primaryGreen.withAlpha((0.5 * 255).toInt()),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -183,7 +183,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
               color: white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withAlpha((0.5 * 255).toInt()),
                   blurRadius: 10,
                   spreadRadius: 0,
                   offset: const Offset(0, -5),
