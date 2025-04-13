@@ -6,13 +6,13 @@ import '../../widgets/plants/plant_card_widget.dart';
 import 'plant_detail_screen.dart';
 
 class PlantsScreen extends StatefulWidget {
-  const PlantsScreen({Key? key}) : super(key: key);
+  const PlantsScreen({super.key});
 
   @override
-  _PlantsScreenState createState() => _PlantsScreenState();
+  PlantsScreenState createState() => PlantsScreenState();
 }
 
-class _PlantsScreenState extends State<PlantsScreen> {
+class PlantsScreenState extends State<PlantsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -72,7 +72,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
               color: whiteColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withAlpha((0.1 * 255).toInt()),
                   blurRadius: 10,
                   spreadRadius: 0,
                   offset: const Offset(0, 2),
@@ -87,7 +87,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
                     _buildCategoryChip('Semua', plantProvider, primaryGreen, lightGreen, whiteColor),
                     ..._getCategoriesFromConstants().map((category) {
                       return _buildCategoryChip(category, plantProvider, primaryGreen, lightGreen, whiteColor);
-                    }).toList(),
+                    }),
                   ],
                 );
               },
@@ -236,7 +236,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
           borderRadius: BorderRadius.circular(12),
         ),
         elevation: isSelected ? 2 : 0,
-        shadowColor: Colors.grey.withOpacity(0.3),
+        shadowColor: Colors.grey.withAlpha((0.3 * 255).toInt()),
       ),
     );
   }

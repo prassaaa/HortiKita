@@ -8,11 +8,11 @@ class ChatBubble extends StatelessWidget {
   final DateTime timestamp;
 
   const ChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.isMe,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
