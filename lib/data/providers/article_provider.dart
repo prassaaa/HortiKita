@@ -102,4 +102,27 @@ class ArticleProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Menghapus artikel berdasarkan ID
+  Future<void> deleteArticle(String articleId) async {
+    _isLoading = true;
+    _error = '';
+    notifyListeners();
+    
+    try {
+      await _articleRepository.deleteArticle(articleId);
+      
+      // Refresh daftar artikel
+      if (_selectedCategory == 'Semua') {
+        await fetchAllArticles();
+      } else {
+        await fetchArticlesByCategory(_selectedCategory);
+      }
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }

@@ -1,20 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../data/providers/auth_provider.dart';
+import 'package:flutter/foundation.dart';
 import '../auth/login_screen.dart';
+import '../articles/article_detail_screen.dart';
+import '../articles/articles_screen.dart';
 import '../plants/plants_screen.dart';
 import '../chatbot/chatbot_screen.dart';
-import '../articles/articles_screen.dart';
-import '../articles/article_detail_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String _userName = "Pengguna";
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
+  Future<void> _loadUserData() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
     
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final doc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .get();
+            
+        if (doc.exists) {
+          final data = doc.data() as Map<String, dynamic>;
+          if (mounted) {
+            setState(() {
+              _userName = data['name'] ?? "Pengguna";
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _signOut() async {
+    try {
+      await _auth.signOut();
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    } catch (e) {
+      print('Error signing out: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Definisi warna tema
     const Color primaryGreen = Color(0xFF4CAF50);
     const Color lightGreen = Color(0xFFE8F5E9);
@@ -34,273 +96,324 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with greeting
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-                decoration: BoxDecoration(
-                  color: lightGreen,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+              ),
+            )
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
+                    // Header with greeting
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: lightGreen,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Halo, ${authProvider.userModel?.name ?? 'Pengguna'}!',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Halo, $_userName!',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E7D32),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Selamat datang di aplikasi Hortikultura',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF558B2F),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Selamat datang di aplikasi Hortikultura',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF558B2F),
+                          const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: primaryGreen,
+                            child: Icon(
+                              Icons.eco,
+                              color: Colors.white,
+                              size: 32,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const CircleAvatar(
-                      radius: 30,
-                      backgroundColor: primaryGreen,
-                      child: Icon(
-                        Icons.eco,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Features section
-              const Text(
-                'Fitur Utama',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D32),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Feature cards
-              SizedBox(
-                height: 150,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  children: [
-                    _buildModernFeatureCard(
-                      context,
-                      'Katalog Tanaman',
-                      'Informasi berbagai tanaman hortikultura',
-                      Icons.eco,
-                      primaryGreen,
-                      lightGreen,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const PlantsScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    _buildModernFeatureCard(
-                      context,
-                      'Chatbot',
-                      'Tanya jawab seputar hortikultura',
-                      Icons.chat_bubble_outline,
-                      primaryGreen,
-                      lightGreen,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    _buildModernFeatureCard(
-                      context,
-                      'Artikel',
-                      'Tips dan informasi hortikultura',
-                      Icons.article_outlined,
-                      primaryGreen,
-                      lightGreen,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Article section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Artikel Terbaru',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'Lihat Semua',
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Features section
+                    const Text(
+                      'Fitur Utama',
                       style: TextStyle(
-                        color: primaryGreen,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // StreamBuilder untuk mengambil artikel dari Firestore (hanya 1 artikel)
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('articles')
-                    .orderBy('publishedAt', descending: true)
-                    .limit(1)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(color: primaryGreen),
+                    const SizedBox(height: 16),
+                    
+                    // Feature cards
+                    SizedBox(
+                      height: 150,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        children: [
+                          _buildModernFeatureCard(
+                            context,
+                            'Katalog Tanaman',
+                            'Informasi berbagai tanaman hortikultura',
+                            Icons.eco,
+                            primaryGreen,
+                            lightGreen,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const PlantsScreen()),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          _buildModernFeatureCard(
+                            context,
+                            'Chatbot',
+                            'Tanya jawab seputar hortikultura',
+                            Icons.chat_bubble_outline,
+                            primaryGreen,
+                            lightGreen,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          _buildModernFeatureCard(
+                            context,
+                            'Artikel',
+                            'Tips dan informasi hortikultura',
+                            Icons.article_outlined,
+                            primaryGreen,
+                            lightGreen,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ArticlesScreen()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    );
-                  }
-                  
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          'Error: ${snapshot.error}',
-                          style: TextStyle(color: Colors.red[700]),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Article section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Artikel Terbaru',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2E7D32),
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                  
-                  final articles = snapshot.data?.docs ?? [];
-                  
-                  if (articles.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.article_outlined,
-                              size: 48,
-                              color: Colors.grey[400],
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ArticlesScreen()),
+                            );
+                          },
+                          child: const Text(
+                            'Lihat Semua',
+                            style: TextStyle(
+                              color: primaryGreen,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Belum ada artikel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // StreamBuilder untuk mengambil artikel dari Firestore (hanya 1 artikel)
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('articles')
+                          .orderBy('publishedAt', descending: true)
+                          .limit(1)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(color: primaryGreen),
+                            ),
+                          );
+                        }
+                        
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                'Error: ${snapshot.error}',
+                                style: TextStyle(color: Colors.red[700]),
                               ),
                             ),
-                          ],
+                          );
+                        }
+                        
+                        final articles = snapshot.data?.docs ?? [];
+                        
+                        if (articles.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.article_outlined,
+                                    size: 48,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Belum ada artikel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        
+                        // Ambil data dari dokumen pertama saja
+                        final doc = articles.first;
+                        final docId = doc.id;
+                        final data = doc.data() as Map<String, dynamic>;
+                        final title = data['title'] ?? 'Artikel';
+                        final imageUrl = data['imageUrl'] ?? '';
+                        final publishDate = data['publishedAt'] != null 
+                            ? (data['publishedAt'] as Timestamp).toDate()
+                            : DateTime.now();
+                        
+                        return _buildArticleCard(
+                          context,
+                          title,
+                          imageUrl,
+                          publishDate,
+                          primaryGreen,
+                          lightGreen,
+                          docId,
+                        );
+                      },
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    Center(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ArticlesScreen()),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: primaryGreen),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                        child: const Text(
+                          'Lihat Semua Artikel',
+                          style: TextStyle(
+                            color: primaryGreen,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    );
-                  }
-                  
-                  // Ambil data dari dokumen pertama saja
-                  final doc = articles.first;
-                  final docId = doc.id;
-                  final data = doc.data() as Map<String, dynamic>;
-                  final title = data['title'] ?? 'Artikel';
-                  final imageUrl = data['imageUrl'] ?? '';
-                  final publishDate = data['publishedAt'] != null 
-                      ? (data['publishedAt'] as Timestamp).toDate()
-                      : DateTime.now();
-                  
-                  return _buildArticleCard(
-                    context,
-                    title,
-                    imageUrl,
-                    publishDate,
-                    primaryGreen,
-                    lightGreen,
-                    docId,
-                  );
-                },
-              ),
-              
-              const SizedBox(height: 24),
-              Center(
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: primaryGreen),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text(
-                    'Lihat Semua Artikel',
-                    style: TextStyle(
-                      color: primaryGreen,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                    
+                    // Debug tools in dev mode
+                    if (!kReleaseMode) ...[
+                      const SizedBox(height: 32),
+                      const Divider(),
+                      const Text(
+                        'Debug Tools (Development Only)',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () async {
+                          final user = _auth.currentUser;
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No user logged in')),
+                            );
+                            return;
+                          }
+                          
+                          try {
+                            final doc = await _firestore
+                                .collection('users')
+                                .doc(user.uid)
+                                .get();
+                                
+                            if (doc.exists) {
+                              final data = doc.data();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('User data: $data')),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('User document not found')),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        },
+                        child: const Text('Check User Data'),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               spreadRadius: 0,
               offset: const Offset(0, -5),
@@ -340,15 +453,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: TextButton.icon(
-                  onPressed: () async {
-                    final navigator = Navigator.of(context);
-                    await authProvider.signOut();
-                    if (navigator.mounted) {
-                      navigator.pushReplacement(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    }
-                  },
+                  onPressed: _signOut,
                   icon: const Icon(Icons.logout, color: Colors.white, size: 26),
                   label: const Text(
                     'Logout',
@@ -393,7 +498,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.grey.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 2),
@@ -462,7 +567,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -488,7 +593,7 @@ class HomeScreen extends StatelessWidget {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: background.withValues(alpha: 0.5),
+                        color: background.withOpacity(0.5),
                         child: Center(
                           child: CircularProgressIndicator(
                             color: primary,
@@ -504,12 +609,12 @@ class HomeScreen extends StatelessWidget {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: background.withValues(alpha: 0.5),
+                        color: background.withOpacity(0.5),
                         child: Center(
                           child: Icon(
                             Icons.error_outline,
                             size: 40,
-                            color: primary.withValues(alpha: 0.6),
+                            color: primary.withOpacity(0.6),
                           ),
                         ),
                       );
@@ -518,12 +623,12 @@ class HomeScreen extends StatelessWidget {
                 : Container(
                     height: 180,
                     width: double.infinity,
-                    color: background.withValues(alpha: 0.5),
+                    color: background.withOpacity(0.5),
                     child: Center(
                       child: Icon(
                         Icons.image,
                         size: 60,
-                        color: primary.withValues(alpha: 0.3),
+                        color: primary.withOpacity(0.3),
                       ),
                     ),
                   ),

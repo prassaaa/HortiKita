@@ -81,4 +81,13 @@ class ArticleRepository {
       throw Exception('Failed to search articles: $e');
     }
   }
+
+  // Menghapus artikel berdasarkan ID
+  Future<void> deleteArticle(String articleId) async {
+    try {
+      await _firestore.collection('articles').doc(articleId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete article: $e');
+    }
+  }
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../data/providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../auth/login_screen.dart';
 import '../home/home_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,25 +13,79 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
   @override
   void initState() {
     super.initState();
-    _checkUserStatus();
+    // Di initState, kita tidak dapat menggunakan context untuk Provider
+    // Jadi gunakan _checkUserStatus yang berbeda
+    _checkUserStatusDirectly();
   }
 
-  Future<void> _checkUserStatus() async {
+  // Pendekatan langsung tanpa Provider
+  Future<void> _checkUserStatusDirectly() async {
     // Simulasi delay splash screen
     await Future.delayed(const Duration(seconds: 2));
     
     if (!mounted) return;
     
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } else {
+    try {
+      // Periksa login status langsung dari Firebase
+      final currentUser = _auth.currentUser;
+      
+      if (currentUser != null) {
+        print('User logged in: ${currentUser.email}');
+        
+        // Periksa role langsung dari Firestore
+        try {
+          final doc = await _firestore
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+              
+          if (doc.exists) {
+            final data = doc.data() as Map<String, dynamic>;
+            final role = data['role'] as String?;
+            final isAdmin = role == 'admin';
+            
+            print('User: ${currentUser.email}, role: $role, isAdmin: $isAdmin');
+            
+            if (!mounted) return;
+            
+            if (isAdmin) {
+              print('User is admin, navigating to AdminDashboardScreen');
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+              );
+              return;
+            }
+          }
+        } catch (e) {
+          print('Error checking user role: $e');
+        }
+        
+        // Default to HomeScreen if not admin or if error occurs
+        if (!mounted) return;
+        print('Navigating to HomeScreen');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        print('No user logged in, navigating to LoginScreen');
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    } catch (e) {
+      print('Error in _checkUserStatusDirectly: $e');
+      // Default to LoginScreen if error
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
 import 'register_screen.dart';
+import 'package:flutter/foundation.dart';
 import '../home/home_screen.dart';
-import '../../../data/providers/auth_provider.dart' as local_auth;
+import '../admin/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,8 @@ class LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _logger = Logger();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -35,20 +38,53 @@ class LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        // Buat instance AuthProvider di sini untuk menghindari penggunaan context setelah async
-        final authProvider = Provider.of<local_auth.AuthProvider>(context, listen: false);
+        // Login dengan Firebase Auth langsung
+        _logger.d('Attempting login with: ${_emailController.text.trim()}');
         
-        await authProvider.signIn(
-          _emailController.text.trim(),
-          _passwordController.text,
+        await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
 
-        if (!mounted) return;
+        _logger.d('Login successful, checking user role');
         
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        // Periksa role user di Firestore
+        final user = _auth.currentUser;
+        if (user != null) {
+          // Tambahkan delay untuk memastikan auth state terupdate
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          final doc = await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .get();
+              
+          if (!mounted) return;
+              
+          if (doc.exists) {
+            final data = doc.data() as Map<String, dynamic>;
+            final role = data['role'] as String?;
+            final isAdmin = role == 'admin';
+            
+            _logger.d('User: ${user.email}, role: $role, isAdmin: $isAdmin');
+            
+            if (isAdmin) {
+              _logger.d('User is admin, navigating to AdminDashboardScreen');
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+              );
+              return;
+            }
+          }
+          
+          // Jika bukan admin atau dokumen tidak ada, navigasi ke HomeScreen
+          _logger.d('User is not admin, navigating to HomeScreen');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         String errorMessage;
         if (e.code == 'user-not-found') {
@@ -65,9 +101,12 @@ class LoginScreenState extends State<LoginScreen> {
           errorMessage = 'Error: ${e.message}';
         }
         
+        _logger.e('Firebase auth error: $errorMessage');
+        
         if (!mounted) return;
         _showErrorDialog(errorMessage);
       } catch (e) {
+        _logger.e('Unexpected error during login: $e');
         if (!mounted) return;
         _showErrorDialog('Terjadi kesalahan: $e');
       } finally {
@@ -315,6 +354,117 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                
+                // Dev Mode Section
+                if (!kReleaseMode) ...[
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const Text(
+                    'Dev Mode Only',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      // Login sebagai admin
+                      _emailController.text = 'admin@hortikultura.app';
+                      _passwordController.text = 'admin123';
+                      _login();
+                    },
+                    child: const Text('Login sebagai Admin'),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final user = _auth.currentUser;
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Belum ada user yang login')),
+                        );
+                        return;
+                      }
+                      
+                      try {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        
+                        // Ubah role secara langsung di Firestore
+                        await _firestore
+                            .collection('users')
+                            .doc(user.uid)
+                            .update({'role': 'admin'});
+                            
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        
+                        // Notifikasi berhasil
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Role berhasil diubah menjadi admin'),
+                            backgroundColor: primaryGreen,
+                          ),
+                        );
+                        
+                        // Navigasi ke AdminDashboardScreen
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                        );
+                      } catch (e) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e')),
+                        );
+                      }
+                    },
+                    child: const Text('Force Set as Admin'),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final user = _auth.currentUser;
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Belum ada user yang login')),
+                        );
+                        return;
+                      }
+                      
+                      try {
+                        // Cek data user
+                        final doc = await _firestore
+                            .collection('users')
+                            .doc(user.uid)
+                            .get();
+                            
+                        if (doc.exists) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('User data: $data'),
+                              duration: const Duration(seconds: 5),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('User document not found'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e')),
+                        );
+                      }
+                    },
+                    child: const Text('Check User Data'),
+                  ),
+                ]
               ],
             ),
           ),
@@ -377,7 +527,7 @@ class LoginScreenState extends State<LoginScreen> {
               final navigatorContext = dialogContext;
 
               try {
-                await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+                await _auth.sendPasswordResetEmail(email: email);
                 
                 // Periksa apakah dialog context masih ada
                 if (!mounted) return;

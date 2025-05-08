@@ -251,4 +251,14 @@ class PlantRepository {
       throw Exception('Failed to add sample plants: $e');
     }
   }
+
+  // Menghapus tanaman berdasarkan ID
+  Future<void> deletePlant(String plantId) async {
+    try {
+      await _firestore.collection('plants').doc(plantId).delete();
+    } catch (e) {
+      _logger.e('Error deleting plant: $e');
+      throw Exception('Failed to delete plant: $e');
+    }
+  }
 }

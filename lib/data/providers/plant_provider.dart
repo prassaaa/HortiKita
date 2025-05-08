@@ -103,4 +103,27 @@ class PlantProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Menghapus tanaman berdasarkan ID
+  Future<void> deletePlant(String plantId) async {
+    _isLoading = true;
+    _error = '';
+    notifyListeners();
+    
+    try {
+      await _plantRepository.deletePlant(plantId);
+      
+      // Refresh daftar tanaman
+      if (_selectedCategory == 'Semua') {
+        await fetchAllPlants();
+      } else {
+        await fetchPlantsByCategory(_selectedCategory);
+      }
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
