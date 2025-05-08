@@ -1,4 +1,3 @@
-// lib/ui/screens/admin/manage_users_screen.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -50,6 +49,17 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
   }
   
   Future<void> _updateUserRole(UserModel user, String newRole) async {
+    // Cek jika role baru sama dengan role saat ini
+    if (user.role == newRole) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pengguna ${user.name} sudah memiliki role ${newRole == 'admin' ? 'Admin' : 'Pengguna'}'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
     try {
       await FirebaseFirestore.instance
           .collection('users')
@@ -65,7 +75,39 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Role pengguna ${user.name} berhasil diperbarui'),
+            content: Text('Role pengguna ${user.name} berhasil diperbarui menjadi ${newRole == 'admin' ? 'Admin' : 'Pengguna'}'),
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  // Fungsi untuk menghapus user
+  Future<void> _deleteUser(UserModel user) async {
+    try {
+      // Hapus dokumen user
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .delete();
+      
+      // Refresh daftar users
+      _loadUsers();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pengguna ${user.name} berhasil dihapus'),
             backgroundColor: const Color(0xFF4CAF50),
           ),
         );
@@ -134,18 +176,23 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
                         ),
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: _users.length,
-                      itemBuilder: (context, index) {
-                        final user = _users[index];
-                        return _buildUserListItem(context, user);
-                      },
+                  : RefreshIndicator(
+                      onRefresh: _loadUsers,
+                      color: const Color(0xFF4CAF50),
+                      child: ListView.builder(
+                        itemCount: _users.length,
+                        itemBuilder: (context, index) {
+                          final user = _users[index];
+                          return _buildUserListItem(context, user);
+                        },
+                      ),
                     ),
-    );
-  }
+            );
+          }
   
   Widget _buildUserListItem(BuildContext context, UserModel user) {
     final dateFormat = DateFormat('dd MMM yyyy');
+    final isAdmin = user.role == 'admin';
     
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -156,7 +203,9 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: isAdmin 
+              ? const Color(0xFFF44336) // Merah untuk admin
+              : const Color(0xFF4CAF50), // Hijau untuk pengguna biasa
           child: Text(
             user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
             style: const TextStyle(
@@ -181,14 +230,14 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: user.role == 'admin' ? Colors.red[100] : Colors.blue[100],
+                    color: isAdmin ? Colors.red[100] : Colors.blue[100],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    user.role == 'admin' ? 'Admin' : 'Pengguna',
+                    isAdmin ? 'Admin' : 'Pengguna',
                     style: TextStyle(
                       fontSize: 12,
-                      color: user.role == 'admin' ? Colors.red[900] : Colors.blue[900],
+                      color: isAdmin ? Colors.red[900] : Colors.blue[900],
                     ),
                   ),
                 ),
@@ -201,25 +250,103 @@ class ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
           ],
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'make_admin') {
-              _updateUserRole(user, 'admin');
-            } else if (value == 'make_user') {
-              _updateUserRole(user, 'user');
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem<String>(
-              value: 'make_admin',
-              child: Text('Jadikan Admin'),
-            ),
-            const PopupMenuItem<String>(
-              value: 'make_user',
-              child: Text('Jadikan Pengguna'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Menu popup untuk aksi
+            PopupMenuButton<String>(
+              tooltip: 'Opsi Pengguna',
+              onSelected: (value) {
+                if (value == 'make_admin') {
+                  _updateUserRole(user, 'admin');
+                } else if (value == 'make_user') {
+                  _updateUserRole(user, 'user');
+                } else if (value == 'delete_user') {
+                  _showDeleteConfirmation(context, user);
+                }
+              },
+              itemBuilder: (context) {
+                // Buat daftar menu berdasarkan status pengguna
+                final menuItems = <PopupMenuItem<String>>[];
+                
+                // Tampilkan 'Jadikan Admin' hanya jika bukan admin
+                if (!isAdmin) {
+                  menuItems.add(const PopupMenuItem<String>(
+                    value: 'make_admin',
+                    child: Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Jadikan Admin'),
+                      ],
+                    ),
+                  ));
+                }
+                
+                // Tampilkan 'Jadikan Pengguna' hanya jika sudah admin
+                if (isAdmin) {
+                  menuItems.add(const PopupMenuItem<String>(
+                    value: 'make_user',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Jadikan Pengguna'),
+                      ],
+                    ),
+                  ));
+                }
+                
+                // Tambahkan opsi hapus untuk semua pengguna
+                menuItems.add(const PopupMenuItem<String>(
+                  value: 'delete_user',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Hapus Pengguna'),
+                    ],
+                  ),
+                ));
+                
+                return menuItems;
+              },
+              icon: const Icon(Icons.more_vert, color: Color(0xFF4CAF50)),
             ),
           ],
         ),
+      ),
+    );
+  }
+  
+  // Dialog konfirmasi penghapusan pengguna
+  void _showDeleteConfirmation(BuildContext context, UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus Pengguna'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus pengguna "${user.name}" (${user.email})? '
+          'Tindakan ini tidak dapat dibatalkan.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteUser(user);
+            },
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }

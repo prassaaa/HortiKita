@@ -113,7 +113,7 @@ class PlantProvider with ChangeNotifier {
     try {
       await _plantRepository.deletePlant(plantId);
       
-      // Refresh daftar tanaman
+      // Refresh daftar tanaman setelah penghapusan
       if (_selectedCategory == 'Semua') {
         await fetchAllPlants();
       } else {

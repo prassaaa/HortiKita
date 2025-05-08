@@ -112,7 +112,7 @@ class ArticleProvider with ChangeNotifier {
     try {
       await _articleRepository.deleteArticle(articleId);
       
-      // Refresh daftar artikel
+      // Refresh daftar artikel setelah penghapusan
       if (_selectedCategory == 'Semua') {
         await fetchAllArticles();
       } else {

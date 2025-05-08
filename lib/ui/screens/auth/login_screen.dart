@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
+import 'package:lottie/lottie.dart';
 import 'register_screen.dart';
 import 'package:flutter/foundation.dart';
 import '../home/home_screen.dart';
@@ -14,7 +15,7 @@ class LoginScreen extends StatefulWidget {
   LoginScreenState createState() => LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -23,11 +24,27 @@ class LoginScreenState extends State<LoginScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  
+  // Animasi
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    
+    // Mengatur animasi untuk berulang terus menerus
+    _animationController.repeat();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -72,7 +89,18 @@ class LoginScreenState extends State<LoginScreen> {
               _logger.d('User is admin, navigating to AdminDashboardScreen');
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const AdminDashboardScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutCubic;
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    return SlideTransition(position: offsetAnimation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
               );
               return;
             }
@@ -82,7 +110,18 @@ class LoginScreenState extends State<LoginScreen> {
           _logger.d('User is not admin, navigating to HomeScreen');
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOutCubic;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                var offsetAnimation = animation.drive(tween);
+                return SlideTransition(position: offsetAnimation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 500),
+            ),
           );
         }
       } on FirebaseAuthException catch (e) {
@@ -172,16 +211,18 @@ class LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 40,
-                        backgroundColor: primaryGreen,
-                        child: Icon(
-                          Icons.eco,
-                          size: 48,
-                          color: white,
+                      // Lottie animation menggantikan CircleAvatar
+                      SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: Lottie.asset(
+                          'assets/animations/login_plant.json', // Sesuaikan dengan nama file animasi Anda
+                          controller: _animationController,
+                          animate: true,
+                          repeat: true,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 6),
                       const Text(
                         'Selamat Datang',
                         style: TextStyle(
@@ -341,7 +382,18 @@ class LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => const RegisterScreen(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOutCubic;
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+                              return SlideTransition(position: offsetAnimation, child: child);
+                            },
+                            transitionDuration: const Duration(milliseconds: 500),
+                          ),
                         );
                       },
                       child: const Text(

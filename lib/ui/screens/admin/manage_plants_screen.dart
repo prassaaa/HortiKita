@@ -107,13 +107,19 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditPlantScreen(isEditing: false),
+              builder: (context) => const EditPlantScreen(isEditing: false),
             ),
           );
+          
+          // Refresh data jika berhasil menambahkan tanaman
+          if (result == true) {
+            if (!mounted) return;
+            Provider.of<PlantProvider>(context, listen: false).fetchAllPlants();
+          }
         },
         backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add),
@@ -165,8 +171,8 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> {
                 Icons.edit,
                 color: Color(0xFF4CAF50),
               ),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditPlantScreen(
@@ -175,6 +181,12 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> {
                     ),
                   ),
                 );
+                
+                // Refresh data jika ada perubahan
+                if (result == true) {
+                  if (!mounted) return;
+                  Provider.of<PlantProvider>(context, listen: false).fetchAllPlants();
+                }
               },
             ),
             IconButton(
@@ -206,10 +218,41 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> {
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () {
-              // Implementasi hapus tanaman
-              // TODO: Tambahkan fungsi deletePlant di PlantProvider
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                // Tutup dialog
+                Navigator.pop(context);
+                
+                // Tampilkan loading
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Menghapus tanaman...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                
+                // Hapus tanaman
+                await Provider.of<PlantProvider>(context, listen: false)
+                  .deletePlant(plant.id);
+                  
+                // Tampilkan notifikasi sukses
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Tanaman berhasil dihapus'),
+                    backgroundColor: Color(0xFF4CAF50),
+                  ),
+                );
+              } catch (e) {
+                // Tampilkan error
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text(
               'Hapus',

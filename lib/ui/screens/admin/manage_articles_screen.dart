@@ -86,7 +86,18 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Tambahkan fungsi untuk menambahkan artikel contoh jika diperlukan
+                      // Navigasi ke halaman tambah artikel
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditArticleScreen(isEditing: false),
+                        ),
+                      ).then((result) {
+                        if (result == true) {
+                          // Refresh data jika artikel berhasil ditambahkan
+                          articleProvider.fetchAllArticles();
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4CAF50),
@@ -108,13 +119,19 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditArticleScreen(isEditing: false),
+              builder: (context) => const EditArticleScreen(isEditing: false),
             ),
           );
+          
+          // Refresh data jika berhasil menambahkan artikel
+          if (result == true) {
+            if (!mounted) return;
+            Provider.of<ArticleProvider>(context, listen: false).fetchAllArticles();
+          }
         },
         backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add),
@@ -193,8 +210,8 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> {
                 Icons.edit,
                 color: Color(0xFF4CAF50),
               ),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditArticleScreen(
@@ -203,6 +220,12 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> {
                     ),
                   ),
                 );
+                
+                // Refresh data jika ada perubahan
+                if (result == true) {
+                  if (!mounted) return;
+                  Provider.of<ArticleProvider>(context, listen: false).fetchAllArticles();
+                }
               },
             ),
             IconButton(
@@ -234,10 +257,41 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> {
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () {
-              // Implementasi hapus artikel
-              // TODO: Tambahkan fungsi deleteArticle di ArticleProvider
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                // Tutup dialog
+                Navigator.pop(context);
+                
+                // Tampilkan loading
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Menghapus artikel...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                
+                // Hapus artikel
+                await Provider.of<ArticleProvider>(context, listen: false)
+                  .deleteArticle(article.id);
+                  
+                // Tampilkan notifikasi sukses
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Artikel berhasil dihapus'),
+                    backgroundColor: Color(0xFF4CAF50),
+                  ),
+                );
+              } catch (e) {
+                // Tampilkan error
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text(
               'Hapus',
