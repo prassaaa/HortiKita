@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../data/providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
 import '../home/home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -10,14 +11,34 @@ class RegisterScreen extends StatefulWidget {
   RegisterScreenState createState() => RegisterScreenState();
 }
 
-class RegisterScreenState extends State<RegisterScreen> {
+class RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // Controller untuk animasi
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+    
+    // Mulai animasi dan atur agar berulang
+    _animationController.repeat();
+  }
 
   @override
   void dispose() {
@@ -25,28 +46,83 @@ class RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
-        await Provider.of<AuthProvider>(context, listen: false).signUp(
-          _nameController.text.trim(),
-          _emailController.text.trim(),
-          _passwordController.text,
+        // Create user with email and password
+        final userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+        
+        // Update display name
+        await userCredential.user?.updateDisplayName(_nameController.text.trim());
+        
+        // Create user document in Firestore
+        final now = DateTime.now();
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'uid': userCredential.user!.uid,
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'photoUrl': null,
+          'role': 'user', // Set default role
+          'createdAt': now,
+          'updatedAt': now,
+        });
 
         if (!mounted) return;
 
+        // Navigasi ke HomeScreen setelah berhasil register
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOutCubic;
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
         );
       } catch (e) {
-        _showErrorDialog(e.toString());
+        if (!mounted) return;
+        _showErrorDialog(_getReadableErrorMessage(e));
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
+  }
+
+  String _getReadableErrorMessage(dynamic error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'email-already-in-use':
+          return 'Email sudah digunakan oleh akun lain.';
+        case 'weak-password':
+          return 'Password terlalu lemah, minimal 6 karakter.';
+        case 'invalid-email':
+          return 'Format email tidak valid.';
+        default:
+          return 'Error: ${error.message}';
+      }
+    }
+    return 'Terjadi kesalahan: $error';
   }
 
   void _showErrorDialog(String message) {
@@ -68,8 +144,6 @@ class RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     // Definisi warna tema yang sama dengan HomeScreen dan LoginScreen
     const Color primaryGreen = Color(0xFF4CAF50);
     const Color lightGreen = Color(0xFFE8F5E9);
@@ -104,13 +178,13 @@ class RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 40,
-                        backgroundColor: primaryGreen,
-                        child: Icon(
-                          Icons.person_add,
-                          size: 48,
-                          color: white,
+                      // Animasi Lottie
+                      SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: Lottie.asset(
+                          'assets/animations/login_plant.json', // Gunakan file animasi yang sama dengan login
+                          controller: _animationController,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -274,7 +348,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: authProvider.isLoading ? null : _register,
+                            onPressed: _isLoading ? null : _register,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryGreen,
                               disabledBackgroundColor: primaryGreen.withAlpha(128),
@@ -284,7 +358,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                               shadowColor: Colors.grey.withAlpha((0.1 * 255).toInt()),
                               elevation: 2,
                             ),
-                            child: authProvider.isLoading
+                            child: _isLoading
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
