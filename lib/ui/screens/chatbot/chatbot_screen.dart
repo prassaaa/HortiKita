@@ -1,10 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/providers/auth_provider.dart' as local_auth;
 import '../../../data/providers/chat_provider.dart';
-import '../../../data/models/chat_message_model.dart'; // Pastikan ini sesuai dengan lokasi ChatMessage
+import '../../../data/models/chat_message_model.dart';
 import '../../widgets/chatbot/chat_bubble_widget.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -16,12 +18,15 @@ class ChatbotScreen extends StatefulWidget {
 class ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String? _selectedImagePath; // untuk menyimpan path gambar yang dipilih
+  bool _showPreview = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = Provider.of<local_auth.AuthProvider>(context, listen: false).currentUser?.uid;
+      final userId = Provider.of<local_auth.AuthProvider>(context, listen: false).currentUser?.uid 
+          ?? FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Provider.of<ChatProvider>(context, listen: false).loadChatHistory(userId).then((_) {
           _scrollToBottom();
@@ -37,15 +42,42 @@ class ChatbotScreenState extends State<ChatbotScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      imageQuality: 70, // Kompresi kualitas
+      maxWidth: 800,    // Batasi lebar
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImagePath = pickedFile.path;
+        _showPreview = true;
+      });
+    }
+  }
+
   void _sendMessage() async {
     final message = _messageController.text.trim();
-    if (message.isEmpty) return;
-
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest_user";
     
+    // Skip jika tidak ada pesan dan tidak ada gambar
+    if (message.isEmpty && _selectedImagePath == null) return;
+    
+    // Clear input teks
     _messageController.clear();
     
-    await Provider.of<ChatProvider>(context, listen: false).sendMessage(userId, message);
+    // Reset selected image setelah diambil nilainya
+    final imagePath = _selectedImagePath;
+    setState(() {
+      _selectedImagePath = null;
+      _showPreview = false;
+    });
+    
+    // Kirim pesan dengan gambar
+    await Provider.of<ChatProvider>(context, listen: false)
+      .sendMessageWithImage(userId, message, imagePath);
     
     _scrollToBottom();
   }
@@ -92,6 +124,58 @@ class ChatbotScreenState extends State<ChatbotScreen> {
       ),
       body: Column(
         children: [
+          // Image Preview (If Selected)
+          if (_showPreview && _selectedImagePath != null)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              color: Colors.grey[200],
+              height: 120,
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      File(_selectedImagePath!),
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Gambar Tanaman',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Tambahkan deskripsi atau pertanyaan tentang tanaman ini',
+                          style: TextStyle(fontSize: 14),
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        _selectedImagePath = null;
+                        _showPreview = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          
           // Chat messages area
           Expanded(
             child: Consumer<ChatProvider>(
@@ -108,7 +192,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Tanyakan sesuatu tentang tanaman hortikultura!',
+                          'Tanyakan sesuatu tentang tanaman hortikultura!\nAtau kirim foto tanaman untuk diidentifikasi.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -154,9 +238,8 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                   itemBuilder: (context, index) {
                     final message = todayMessages[index];
                     return ChatBubble(
-                      message: message.message,
+                      message: message,
                       isMe: message.sender == 'user',
-                      timestamp: message.timestamp,
                     );
                   },
                 );
@@ -176,7 +259,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
             },
           ),
           
-          // Input area
+          // Input area with Image buttons
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -196,6 +279,17 @@ class ChatbotScreenState extends State<ChatbotScreen> {
             ),
             child: Row(
               children: [
+                // Tombol Kamera
+                IconButton(
+                  icon: const Icon(Icons.camera_alt, color: primaryGreen),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                ),
+                // Tombol Galeri
+                IconButton(
+                  icon: const Icon(Icons.photo_library, color: primaryGreen),
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                ),
+                // Input Teks
                 Expanded(
                   child: TextField(
                     controller: _messageController,
@@ -216,6 +310,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
+                // Tombol Kirim
                 Consumer<ChatProvider>(
                   builder: (context, chatProvider, child) {
                     return FloatingActionButton(

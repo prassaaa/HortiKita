@@ -5,12 +5,16 @@ class ChatMessage {
   final String sender; // 'user' atau 'ai'
   final String message;
   final DateTime timestamp;
+  final String? imageUrl;
+  final String? localImagePath;
 
   ChatMessage({
     required this.id,
     required this.sender,
     required this.message,
     required this.timestamp,
+    this.imageUrl,
+    this.localImagePath,
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
@@ -21,6 +25,8 @@ class ChatMessage {
       timestamp: map['timestamp'] is Timestamp
           ? (map['timestamp'] as Timestamp).toDate()
           : DateTime.now(),
+      imageUrl: map['imageUrl'],
+      localImagePath: map['localImagePath'],
     );
   }
 
@@ -30,6 +36,7 @@ class ChatMessage {
       'sender': sender,
       'message': message,
       'timestamp': Timestamp.fromDate(timestamp),
+      'imageUrl': imageUrl,
     };
   }
 }

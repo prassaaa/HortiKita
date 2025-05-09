@@ -41,6 +41,8 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.7
   cached_network_image: ^3.2.3
+  image_picker: ^1.0.7
+  flutter_image_compress: ^2.1.0
 
   # State management
   provider: ^6.0.5

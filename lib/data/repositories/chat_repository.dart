@@ -8,13 +8,25 @@ class ChatRepository {
   
   ChatRepository(this._geminiService);
   
-  Future<String> sendMessage(String userId, String message) async {
+  Future<String> sendMessage(
+    String userId, 
+    String message, 
+    String? imageUrl, 
+    String? base64Image // Parameter baru untuk base64 image
+  ) async {
     try {
       // Mendapatkan respons dari Gemini API
-      final response = await _geminiService.generateResponse(message);
+      String response;
+      if (base64Image != null) {
+        // Gunakan base64 langsung ke Gemini
+        response = await _geminiService.generateResponseWithImage(message, base64Image);
+      } else {
+        response = await _geminiService.generateResponse(message);
+      }
       
-      // Simpan percakapan ke Firebase
-      await _saveMessageToFirebase(userId, message, response);
+      // Simpan percakapan ke Firebase - tanpa menyimpan base64 image karena terlalu besar
+      // Hanya simpan referensi jika ada imageUrl (kasus penggunaan Firebase Storage)
+      await _saveMessageToFirebase(userId, message, response, imageUrl);
       
       return response;
     } catch (e) {
@@ -25,7 +37,8 @@ class ChatRepository {
   Future<void> _saveMessageToFirebase(
     String userId, 
     String userMessage, 
-    String aiResponse
+    String aiResponse,
+    String? imageUrl // Tetap gunakan imageUrl jika ada
   ) async {
     try {
       // Periksa apakah ada chat history untuk user ini
@@ -44,6 +57,7 @@ class ChatRepository {
                 'sender': 'user',
                 'message': userMessage,
                 'timestamp': now,
+                'imageUrl': imageUrl, // Opsional, bisa null
               },
               {
                 'id': '${now.millisecondsSinceEpoch + 1}_ai',
@@ -64,6 +78,7 @@ class ChatRepository {
                 'sender': 'user',
                 'message': userMessage,
                 'timestamp': now,
+                'imageUrl': imageUrl, // Opsional, bisa null
               },
               {
                 'id': '${now.millisecondsSinceEpoch + 1}_ai',
