@@ -15,16 +15,51 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String _userName = "Pengguna";
   bool _isLoading = true;
   
+  // Animation Controllers
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
   @override
   void initState() {
     super.initState();
+    _initializeAnimations();
     _loadUserData();
+  }
+  
+  void _initializeAnimations() {
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    ));
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
   }
   
   Future<void> _loadUserData() async {
@@ -51,6 +86,11 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       }
+      
+      // Start animations
+      _fadeController.forward();
+      _slideController.forward();
+      
     } catch (e) {
       print('Error loading user data: $e');
     } finally {
@@ -62,12 +102,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
   
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
+
+  // Theme Colors - Modern Design System (matching Login/Register)
+  static const Color primaryColor = Color(0xFF2D5A27);
+  static const Color primaryLight = Color(0xFF4CAF50);
+  static const Color primarySurface = Color(0xFFF1F8E9);
+  static const Color surfaceColor = Color(0xFFFAFAFA);
+  static const Color cardColor = Colors.white;
+  static const Color textPrimary = Color(0xFF1B1B1B);
+  static const Color textSecondary = Color(0xFF6B6B6B);
+  static const Color dividerColor = Color(0xFFE0E0E0);
+  
   Future<void> _signOut() async {
     try {
       await _auth.signOut();
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(-1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOutCubic;
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 400),
+          ),
         );
       }
     } catch (e) {
@@ -77,400 +145,121 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Definisi warna tema
-    const Color primaryGreen = Color(0xFF4CAF50);
-    const Color lightGreen = Color(0xFFE8F5E9);
-    const Color white = Colors.white;
+    final size = MediaQuery.of(context).size;
+    final bool isTablet = size.width > 600;
     
     return Scaffold(
-      backgroundColor: white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: white,
-        title: const Text(
-          'Hortikultura',
-          style: TextStyle(
-            color: primaryGreen,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
-      ),
+      backgroundColor: surfaceColor,
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
-              ),
-            )
-          : SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with greeting
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-                      decoration: BoxDecoration(
-                        color: lightGreen,
-                        borderRadius: BorderRadius.circular(20),
+          ? _buildLoadingState()
+          : FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    _buildAppBar(),
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 32.0 : 24.0,
+                        vertical: 16.0,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Halo, $_userName!',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2E7D32),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Selamat datang di aplikasi Hortikultura',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF558B2F),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: primaryGreen,
-                            child: Icon(
-                              Icons.eco,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ],
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildWelcomeSection(),
+                          const SizedBox(height: 40),
+                          _buildFeaturesSection(isTablet),
+                          const SizedBox(height: 40),
+                          _buildArticlesSection(),
+                          if (!kReleaseMode) ...[
+                            const SizedBox(height: 32),
+                            _buildDebugSection(),
+                          ],
+                          const SizedBox(height: 100), // Space for bottom nav
+                        ]),
                       ),
                     ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Features section
-                    const Text(
-                      'Fitur Utama',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Feature cards
-                    SizedBox(
-                      height: 150,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        children: [
-                          _buildModernFeatureCard(
-                            context,
-                            'Katalog Tanaman',
-                            'Informasi berbagai tanaman hortikultura',
-                            Icons.eco,
-                            primaryGreen,
-                            lightGreen,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const PlantsScreen()),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 16),
-                          _buildModernFeatureCard(
-                            context,
-                            'Chatbot',
-                            'Tanya jawab seputar hortikultura',
-                            Icons.chat_bubble_outline,
-                            primaryGreen,
-                            lightGreen,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 16),
-                          _buildModernFeatureCard(
-                            context,
-                            'Artikel',
-                            'Tips dan informasi hortikultura',
-                            Icons.article_outlined,
-                            primaryGreen,
-                            lightGreen,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Article section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Artikel Terbaru',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E7D32),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                            );
-                          },
-                          child: const Text(
-                            'Lihat Semua',
-                            style: TextStyle(
-                              color: primaryGreen,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // StreamBuilder untuk mengambil artikel dari Firestore (hanya 1 artikel)
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('articles')
-                          .orderBy('publishedAt', descending: true)
-                          .limit(1)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CircularProgressIndicator(color: primaryGreen),
-                            ),
-                          );
-                        }
-                        
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text(
-                                'Error: ${snapshot.error}',
-                                style: TextStyle(color: Colors.red[700]),
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        final articles = snapshot.data?.docs ?? [];
-                        
-                        if (articles.isEmpty) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.article_outlined,
-                                    size: 48,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Belum ada artikel',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        // Ambil data dari dokumen pertama saja
-                        final doc = articles.first;
-                        final docId = doc.id;
-                        final data = doc.data() as Map<String, dynamic>;
-                        final title = data['title'] ?? 'Artikel';
-                        final imageUrl = data['imageUrl'] ?? '';
-                        final publishDate = data['publishedAt'] != null 
-                            ? (data['publishedAt'] as Timestamp).toDate()
-                            : DateTime.now();
-                        
-                        return _buildArticleCard(
-                          context,
-                          title,
-                          imageUrl,
-                          publishDate,
-                          primaryGreen,
-                          lightGreen,
-                          docId,
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    Center(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ArticlesScreen()),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: primaryGreen),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        ),
-                        child: const Text(
-                          'Lihat Semua Artikel',
-                          style: TextStyle(
-                            color: primaryGreen,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    // Debug tools in dev mode
-                    if (!kReleaseMode) ...[
-                      const SizedBox(height: 32),
-                      const Divider(),
-                      const Text(
-                        'Debug Tools (Development Only)',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () async {
-                          final user = _auth.currentUser;
-                          if (user == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('No user logged in')),
-                            );
-                            return;
-                          }
-                          
-                          try {
-                            final doc = await _firestore
-                                .collection('users')
-                                .doc(user.uid)
-                                .get();
-                                
-                            if (doc.exists) {
-                              final data = doc.data();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('User data: $data')),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('User document not found')),
-                              );
-                            }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
-                            );
-                          }
-                        },
-                        child: const Text('Check User Data'),
-                      ),
-                    ],
                   ],
                 ),
               ),
             ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              spreadRadius: 0,
-              offset: const Offset(0, -5),
+      bottomNavigationBar: _buildBottomNavigation(),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-          ],
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.home, color: primaryGreen, size: 26),
-                  label: const Text(
-                    'Beranda',
-                    style: TextStyle(
-                      color: primaryGreen,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    backgroundColor: lightGreen,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
+            child: Center(
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  color: primaryLight,
+                  strokeWidth: 3,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: _signOut,
-                  icon: const Icon(Icons.logout, color: Colors.white, size: 26),
-                  label: const Text(
-                    'Logout',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    backgroundColor: primaryGreen,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Memuat data...',
+            style: TextStyle(
+              fontSize: 16,
+              color: textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 120,
+      floating: false,
+      pinned: true,
+      backgroundColor: cardColor,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
+        title: Text(
+          'Hortikultura',
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 24,
+            letterSpacing: -0.5,
+          ),
+        ),
+        background: Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -479,70 +268,223 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildModernFeatureCard(
-    BuildContext context,
-    String title,
-    String description,
-    IconData icon,
-    Color primary,
-    Color background,
-    VoidCallback onTap,
-  ) {
+  Widget _buildWelcomeSection() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            primarySurface,
+            primarySurface.withOpacity(0.7),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Halo, $_userName! 👋',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Selamat datang di aplikasi Hortikultura.\nMari jelajahi dunia tanaman bersama!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: cardColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Icons.eco,
+                color: primaryColor,
+                size: 36,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturesSection(bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Fitur Utama',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: textPrimary,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 20),
+        isTablet
+            ? _buildTabletFeatureGrid()
+            : _buildMobileFeatureScroll(),
+      ],
+    );
+  }
+
+  Widget _buildTabletFeatureGrid() {
+    final features = [
+      _getFeatureData('Katalog Tanaman', 'Informasi berbagai tanaman hortikultura', Icons.eco, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const PlantsScreen()));
+      }),
+      _getFeatureData('Chatbot', 'Tanya jawab seputar hortikultura', Icons.chat_bubble_outline, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()));
+      }),
+      _getFeatureData('Artikel', 'Tips dan informasi hortikultura', Icons.article_outlined, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesScreen()));
+      }),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: features.length,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.2,
+      ),
+      itemCount: features.length,
+      itemBuilder: (context, index) => _buildFeatureCard(features[index]),
+    );
+  }
+
+  Widget _buildMobileFeatureScroll() {
+    final features = [
+      _getFeatureData('Katalog Tanaman', 'Informasi berbagai tanaman hortikultura', Icons.eco, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const PlantsScreen()));
+      }),
+      _getFeatureData('Chatbot', 'Tanya jawab seputar hortikultura', Icons.chat_bubble_outline, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()));
+      }),
+      _getFeatureData('Artikel', 'Tips dan informasi hortikultura', Icons.article_outlined, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesScreen()));
+      }),
+    ];
+
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: features.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 16),
+        itemBuilder: (context, index) => SizedBox(
+          width: 200,
+          child: _buildFeatureCard(features[index]),
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> _getFeatureData(String title, String description, IconData icon, VoidCallback onTap) {
+    return {
+      'title': title,
+      'description': description,
+      'icon': icon,
+      'onTap': onTap,
+    };
+  }
+
+  Widget _buildFeatureCard(Map<String, dynamic> feature) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: feature['onTap'],
       child: Container(
-        width: 180,
-        height: 150,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
-          border: Border.all(color: background, width: 1.5),
+          border: Border.all(color: dividerColor.withOpacity(0.5)),
         ),
-        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(12),
+                color: primarySurface,
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
-                icon,
+                feature['icon'],
                 size: 24,
-                color: primary,
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
+              feature['title'],
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+                letterSpacing: -0.2,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            Flexible(
+            const SizedBox(height: 6),
+            Expanded(
               child: Text(
-                description,
+                feature['description'],
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                  fontSize: 13,
+                  color: textSecondary,
+                  height: 1.3,
                 ),
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -552,25 +494,217 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildArticleCard(
-    BuildContext context,
-    String title,
-    String imageUrl,
-    DateTime publishDate,
-    Color primary,
-    Color background,
-    String articleId,
-  ) {
+  Widget _buildArticlesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Artikel Terbaru',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ArticlesScreen()),
+                );
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: primaryLight,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Lihat Semua',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('articles')
+              .orderBy('publishedAt', descending: true)
+              .limit(1)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildArticleLoadingCard();
+            }
+            
+            if (snapshot.hasError) {
+              return _buildArticleErrorCard(snapshot.error.toString());
+            }
+            
+            final articles = snapshot.data?.docs ?? [];
+            
+            if (articles.isEmpty) {
+              return _buildEmptyArticleCard();
+            }
+            
+            final doc = articles.first;
+            final docId = doc.id;
+            final data = doc.data() as Map<String, dynamic>;
+            final title = data['title'] ?? 'Artikel';
+            final imageUrl = data['imageUrl'] ?? '';
+            final publishDate = data['publishedAt'] != null 
+                ? (data['publishedAt'] as Timestamp).toDate()
+                : DateTime.now();
+            
+            return _buildArticleCard(title, imageUrl, publishDate, docId);
+          },
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ArticlesScreen()),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: primaryColor,
+              side: BorderSide(color: primaryColor, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+            child: Text(
+              'Lihat Semua Artikel',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildArticleLoadingCard() {
     return Container(
+      height: 200,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Center(
+        child: CircularProgressIndicator(color: primaryLight),
+      ),
+    );
+  }
+
+  Widget _buildArticleErrorCard(String error) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+          const SizedBox(height: 16),
+          Text(
+            'Gagal memuat artikel',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            style: TextStyle(fontSize: 14, color: textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyArticleCard() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.article_outlined, size: 48, color: textSecondary.withOpacity(0.6)),
+          const SizedBox(height: 16),
+          Text(
+            'Belum ada artikel',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Artikel akan segera tersedia',
+            style: TextStyle(fontSize: 14, color: textSecondary.withOpacity(0.8)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArticleCard(String title, String imageUrl, DateTime publishDate, String articleId) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -585,18 +719,18 @@ class _HomeScreenState extends State<HomeScreen> {
             child: imageUrl.isNotEmpty
                 ? Image.network(
                     imageUrl,
-                    height: 180,
+                    height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        height: 180,
+                        height: 200,
                         width: double.infinity,
-                        color: background.withOpacity(0.5),
+                        color: surfaceColor,
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: primary,
+                            color: primaryLight,
                             value: loadingProgress.expectedTotalBytes != null
                                 ? loadingProgress.cumulativeBytesLoaded / 
                                   loadingProgress.expectedTotalBytes!
@@ -607,110 +741,272 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        height: 180,
+                        height: 200,
                         width: double.infinity,
-                        color: background.withOpacity(0.5),
+                        color: surfaceColor,
                         child: Center(
                           child: Icon(
                             Icons.error_outline,
                             size: 40,
-                            color: primary.withOpacity(0.6),
+                            color: textSecondary,
                           ),
                         ),
                       );
                     },
                   )
                 : Container(
-                    height: 180,
+                    height: 200,
                     width: double.infinity,
-                    color: background.withOpacity(0.5),
+                    color: surfaceColor,
                     child: Center(
                       child: Icon(
                         Icons.image,
                         size: 60,
-                        color: primary.withOpacity(0.3),
+                        color: textSecondary.withOpacity(0.4),
                       ),
                     ),
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: background,
+                        color: primarySurface,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Tips',
                         style: TextStyle(
                           fontSize: 12,
-                          color: primary,
-                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Text(
                       '${publishDate.day}/${publishDate.month}/${publishDate.year}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[500],
+                        color: textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E7D32),
-                  ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ArticleDetailScreen(articleId: articleId),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                    letterSpacing: -0.3,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ArticleDetailScreen(articleId: articleId),
                         ),
-                      ),
-                      child: const Row(
-                        children: [
-                          Text(
-                            'Baca Selengkapnya',
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          SizedBox(width: 4),
-                          Icon(Icons.arrow_forward, size: 16),
-                        ],
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: primaryLight,
+                      backgroundColor: primarySurface,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Baca Selengkapnya',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.arrow_forward, size: 16),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDebugSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.developer_mode, color: Colors.orange.shade600, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Development Tools',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.orange.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final user = _auth.currentUser;
+                if (user == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No user logged in')),
+                  );
+                  return;
+                }
+                
+                try {
+                  final doc = await _firestore
+                      .collection('users')
+                      .doc(user.uid)
+                      .get();
+                      
+                  if (doc.exists) {
+                    final data = doc.data();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('User data: $data')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('User document not found')),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              },
+              icon: Icon(Icons.info_outline, size: 18),
+              label: Text('Check User Data'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.orange.shade600,
+                side: BorderSide(color: Colors.orange.shade300),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigation() {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: primarySurface,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TextButton.icon(
+                    onPressed: () {},
+                    icon: Icon(Icons.home, color: primaryColor, size: 24),
+                    label: Text(
+                      'Beranda',
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TextButton.icon(
+                    onPressed: _signOut,
+                    icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                    label: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

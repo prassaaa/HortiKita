@@ -227,7 +227,7 @@ class SplashScreenState extends State<SplashScreen> with SingleTickerProviderSta
                 child: AnimatedTextKit(
                   animatedTexts: [
                     FadeAnimatedText(
-                      'Hortikultura App',
+                      'HortiKita',
                       textStyle: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
