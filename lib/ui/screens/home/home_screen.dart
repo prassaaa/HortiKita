@@ -244,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
         title: Text(
-          'Hortikultura',
+          'HortiKita',
           style: TextStyle(
             color: primaryColor,
             fontWeight: FontWeight.w700,
