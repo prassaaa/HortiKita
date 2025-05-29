@@ -561,7 +561,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
             'Login sebagai Admin',
             Icons.admin_panel_settings_outlined,
             () {
-              _emailController.text = 'admin@hortikultura.app';
+              _emailController.text = 'admin@hortikita.app';
               _passwordController.text = 'admin123';
               _login();
             },

@@ -87,7 +87,7 @@ Future<void> _ensureAdminExists() async {
       logger.d('No admin account found, creating one');
       
       // Tidak ada admin, buat akun admin
-      final adminEmail = 'admin@hortikultura.app';
+      final adminEmail = 'admin@hortikita.app';
       final adminPassword = 'admin123';
       
       try {
