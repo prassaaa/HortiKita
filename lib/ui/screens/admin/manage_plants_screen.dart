@@ -16,6 +16,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
   late Animation<double> _fadeAnimation;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedFilter = 'all'; // all, category-specific
 
   @override
   void initState() {
@@ -60,13 +61,31 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
   static const Color dividerColor = Color(0xFFE0E0E0);
 
   List<Plant> _getFilteredPlants(List<Plant> plants) {
-    if (_searchQuery.isEmpty) return plants;
+    List<Plant> filteredPlants = plants;
     
-    return plants.where((plant) {
-      return plant.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             plant.scientificName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             plant.category.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    // Filter by search query
+    if (_searchQuery.isNotEmpty) {
+      filteredPlants = filteredPlants.where((plant) {
+        return plant.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+               plant.scientificName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+               plant.category.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+    
+    // Filter by category
+    if (_selectedFilter != 'all') {
+      filteredPlants = filteredPlants.where((plant) {
+        return plant.category.toLowerCase() == _selectedFilter.toLowerCase();
+      }).toList();
+    }
+    
+    return filteredPlants;
+  }
+
+  List<String> _getUniqueCategories(List<Plant> plants) {
+    final categories = plants.map((plant) => plant.category).toSet().toList();
+    categories.sort();
+    return categories;
   }
 
   @override
@@ -161,61 +180,128 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
   }
 
   Widget _buildSearchSection() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
+    return Consumer<PlantProvider>(
+      builder: (context, plantProvider, child) {
+        final categories = _getUniqueCategories(plantProvider.plants);
+        
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+                style: TextStyle(
+                  color: textPrimary,
+                  fontSize: 16,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Cari tanaman...',
+                  hintStyle: TextStyle(
+                    color: textSecondary,
+                    fontSize: 16,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: textSecondary,
+                    size: 20,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: textSecondary, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = '';
+                            });
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: surfaceColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
+              ),
+            ),
+            if (categories.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Filter Kategori:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildFilterChip('Semua', 'all'),
+                      ...categories.map((category) => _buildFilterChip(category, category)),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _selectedFilter == value;
+    
+    return FilterChip(
+      label: Text(
+        label,
         style: TextStyle(
-          color: textPrimary,
-          fontSize: 16,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Cari tanaman...',
-          hintStyle: TextStyle(
-            color: textSecondary,
-            fontSize: 16,
-          ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: textSecondary,
-            size: 20,
-          ),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: textSecondary, size: 20),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _searchQuery = '';
-                    });
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: surfaceColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          color: isSelected ? primaryColor : textSecondary,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          fontSize: 12,
         ),
       ),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _selectedFilter = selected ? value : 'all';
+        });
+      },
+      backgroundColor: cardColor,
+      selectedColor: primarySurface,
+      showCheckmark: false,
+      side: BorderSide(
+        color: isSelected ? primaryLight : dividerColor,
+        width: isSelected ? 1.5 : 1,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     );
   }
 
