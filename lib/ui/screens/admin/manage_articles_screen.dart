@@ -636,6 +636,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 80,
@@ -701,18 +702,21 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        article.category,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.orange.shade600,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          article.category,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange.shade600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
@@ -723,11 +727,14 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                       color: textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      '${article.readTime} min',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: textSecondary,
+                    Flexible(
+                      child: Text(
+                        '${article.readTime} min',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: textSecondary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -739,6 +746,8 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                     fontSize: 12,
                     color: textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
