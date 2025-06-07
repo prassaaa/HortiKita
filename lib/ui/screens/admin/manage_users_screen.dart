@@ -774,6 +774,8 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
                     fontWeight: FontWeight.w600,
                     color: textPrimary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -782,31 +784,40 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
                     fontSize: 14,
                     color: textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isAdmin ? Colors.red.shade50 : Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        isAdmin ? 'Admin' : 'Pengguna',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isAdmin ? Colors.red.shade600 : Colors.blue.shade600,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isAdmin ? Colors.red.shade50 : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          isAdmin ? 'Admin' : 'Pengguna',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isAdmin ? Colors.red.shade600 : Colors.blue.shade600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Terdaftar: ${dateFormat.format(user.createdAt)}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: textSecondary,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Terdaftar: ${dateFormat.format(user.createdAt)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
