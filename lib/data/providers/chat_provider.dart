@@ -171,7 +171,7 @@ class ChatProvider with ChangeNotifier {
       // Kompresi gambar untuk mengurangi ukuran
       File? compressedFile;
       try {
-        final targetPath = imagePath + '_compressed.jpg';
+        final targetPath = '${imagePath}_compressed.jpg';
         final compressedData = await FlutterImageCompress.compressAndGetFile(
           imagePath, 
           targetPath,

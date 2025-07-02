@@ -67,7 +67,7 @@ class AuthProvider with ChangeNotifier {
       
       if (doc.exists) {
         _userModel = UserModel.fromFirestore(doc);
-        _logger.d('User data fetched: ${_userModel?.email}, role: ${_userModel?.role}, isAdmin: ${isAdmin}');
+        _logger.d('User data fetched: ${_userModel?.email}, role: ${_userModel?.role}, isAdmin: $isAdmin');
       } else {
         _logger.d('User document does not exist, creating new one');
         // Create user document if it doesn't exist
@@ -192,7 +192,7 @@ class AuthProvider with ChangeNotifier {
       _logger.d('Sign in successful, manually fetching user data');
       await Future.delayed(const Duration(milliseconds: 500)); // Small delay to ensure auth state is updated
       await _fetchUserData();
-      _logger.d('After login and manual fetch: isAdmin=${isAdmin}');
+      _logger.d('After login and manual fetch: isAdmin=$isAdmin');
     } catch (e) {
       _logger.e('Error during sign in: $e');
       _error = e.toString();
