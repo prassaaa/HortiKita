@@ -306,7 +306,7 @@ class EditArticleScreenState extends State<EditArticleScreen>
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -332,7 +332,7 @@ class EditArticleScreenState extends State<EditArticleScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -390,13 +390,13 @@ class EditArticleScreenState extends State<EditArticleScreen>
           end: Alignment.bottomRight,
           colors: [
             primarySurface,
-            primarySurface.withOpacity(0.7),
+            primarySurface.withValues(alpha: 0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.08),
+            color: primaryColor.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -442,7 +442,7 @@ class EditArticleScreenState extends State<EditArticleScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -467,7 +467,7 @@ class EditArticleScreenState extends State<EditArticleScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -694,9 +694,9 @@ class EditArticleScreenState extends State<EditArticleScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: primarySurface.withOpacity(0.3),
+            color: primarySurface.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: primaryColor.withOpacity(0.2)),
+            border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
@@ -764,7 +764,7 @@ class EditArticleScreenState extends State<EditArticleScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: primaryLight.withOpacity(0.3),
+            color: primaryLight.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
