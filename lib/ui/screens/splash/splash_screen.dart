@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
@@ -15,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  final Logger _logger = Logger();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
@@ -128,7 +130,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       final currentUser = _auth.currentUser;
       
       if (currentUser != null) {
-        print('User logged in: ${currentUser.email}');
+        _logger.d('User logged in: ${currentUser.email}');
         
         try {
           final doc = await _firestore
@@ -141,30 +143,30 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             final role = data['role'] as String?;
             final isAdmin = role == 'admin';
             
-            print('User: ${currentUser.email}, role: $role, isAdmin: $isAdmin');
+            _logger.d('User: ${currentUser.email}, role: $role, isAdmin: $isAdmin');
             
             if (!mounted) return;
             
             if (isAdmin) {
-              print('User is admin, navigating to AdminDashboardScreen');
+              _logger.d('User is admin, navigating to AdminDashboardScreen');
               _navigateWithTransition(const AdminDashboardScreen());
               return;
             }
           }
         } catch (e) {
-          print('Error checking user role: $e');
+          _logger.d('Error checking user role: $e');
         }
         
         if (!mounted) return;
-        print('Navigating to HomeScreen');
+        _logger.d('Navigating to HomeScreen');
         _navigateWithTransition(const HomeScreen());
       } else {
-        print('No user logged in, navigating to LoginScreen');
+        _logger.d('No user logged in, navigating to LoginScreen');
         if (!mounted) return;
         _navigateWithTransition(const LoginScreen());
       }
     } catch (e) {
-      print('Error in _checkUserStatusDirectly: $e');
+      _logger.d('Error in _checkUserStatusDirectly: $e');
       if (!mounted) return;
       _navigateWithTransition(const LoginScreen());
     }
@@ -200,7 +202,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              primarySurface.withOpacity(0.3),
+              primarySurface.withValues(alpha: 0.3),
               surfaceColor,
               cardColor,
             ],
@@ -249,7 +251,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryLight.withOpacity(0.2),
+                  color: primaryLight.withValues(alpha: 0.2),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -261,7 +263,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -304,7 +306,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                       letterSpacing: -1.0,
                       shadows: [
                         Shadow(
-                          color: primaryLight.withOpacity(0.3),
+                          color: primaryLight.withValues(alpha: 0.3),
                           offset: const Offset(0, 2),
                           blurRadius: 4,
                         ),
@@ -348,7 +350,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                 'Platform Digital untuk Petani Modern',
                 style: TextStyle(
                   fontSize: 14,
-                  color: textSecondary.withOpacity(0.8),
+                  color: textSecondary.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w400,
                 ),
               ),

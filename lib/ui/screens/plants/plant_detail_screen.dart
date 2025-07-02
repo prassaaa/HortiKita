@@ -158,11 +158,11 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: cardColor.withOpacity(0.9),
+          color: cardColor.withValues(alpha: 0.9),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -177,11 +177,11 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: cardColor.withOpacity(0.9),
+            color: cardColor.withValues(alpha: 0.9),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -195,11 +195,11 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
         Container(
           margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
           decoration: BoxDecoration(
-            color: cardColor.withOpacity(0.9),
+            color: cardColor.withValues(alpha: 0.9),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -233,7 +233,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
                   child: Icon(
                     Icons.eco,
                     size: 64,
-                    color: primaryColor.withOpacity(0.5),
+                    color: primaryColor.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -247,8 +247,8 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
                   colors: [
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -274,7 +274,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -313,8 +313,8 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    _buildInfoChip('${widget.plant.category}', Icons.category_outlined, primaryColor),
-                    _buildInfoChip('${widget.plant.difficulty}', Icons.bar_chart, _getDifficultyColor(widget.plant.difficulty)),
+                    _buildInfoChip(widget.plant.category, Icons.category_outlined, primaryColor),
+                    _buildInfoChip(widget.plant.difficulty, Icons.bar_chart, _getDifficultyColor(widget.plant.difficulty)),
                     _buildInfoChip('${widget.plant.growthDuration} hari', Icons.schedule, primaryLight),
                   ],
                 ),
@@ -415,7 +415,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -461,9 +461,9 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -492,7 +492,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -545,7 +545,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: primaryLight.withOpacity(0.3),
+                  color: primaryLight.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -597,7 +597,7 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: primarySurface.withOpacity(0.5),
+        color: primarySurface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: primarySurface),
       ),

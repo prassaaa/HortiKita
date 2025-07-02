@@ -289,7 +289,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
         color: cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -360,7 +360,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -460,7 +460,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -529,7 +529,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -541,7 +541,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
             Icon(
               Icons.wb_sunny,
               size: 64,
-              color: Colors.orange.withOpacity(0.6),
+              color: Colors.orange.withValues(alpha: 0.6),
             ),
             const SizedBox(height: 16),
             Text(
@@ -576,7 +576,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
         decoration: BoxDecoration(
           color: primarySurface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: primaryLight.withOpacity(0.3)),
+          border: Border.all(color: primaryLight.withValues(alpha: 0.3)),
         ),
         child: Text(
           text,
@@ -594,7 +594,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
     return Consumer<ChatProvider>(
       builder: (context, chatProvider, child) {
         return chatProvider.isLoading
-            ? Container(
+            ? SizedBox(
                 height: 4,
                 child: LinearProgressIndicator(
                   backgroundColor: primarySurface,
@@ -613,7 +613,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
         color: cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -681,7 +681,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: (chatProvider.isLoading ? textSecondary : primaryColor).withOpacity(0.3),
+                        color: (chatProvider.isLoading ? textSecondary : primaryColor).withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

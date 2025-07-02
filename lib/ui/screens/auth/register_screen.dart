@@ -245,7 +245,7 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryColor.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -300,7 +300,7 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -417,7 +417,7 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
                 onPressed: _isLoading ? null : _register,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  disabledBackgroundColor: primaryColor.withOpacity(0.6),
+                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.6),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shadowColor: Colors.transparent,

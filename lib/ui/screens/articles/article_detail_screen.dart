@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:logger/logger.dart';
 import '../../../data/providers/article_provider.dart';
 import '../../../data/models/article_model.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -20,6 +21,7 @@ class ArticleDetailScreen extends StatefulWidget {
 }
 
 class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerProviderStateMixin {
+  final Logger _logger = Logger();
   Article? _article;
   bool _isLoading = true;
   String _errorMessage = '';
@@ -72,7 +74,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
       await initializeDateFormatting('id_ID', null);
     } catch (e) {
       // Fallback jika locale Indonesia tidak tersedia
-      print('Date formatting initialization failed: $e');
+      _logger.w('Date formatting initialization failed: $e');
     }
   }
   
@@ -228,7 +230,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -273,7 +275,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                 color: cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -308,7 +310,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -394,7 +396,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                 color: cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -429,7 +431,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -441,7 +443,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                       Icon(
                         Icons.article_outlined,
                         size: 64,
-                        color: textSecondary.withOpacity(0.6),
+                        color: textSecondary.withValues(alpha: 0.6),
                       ),
                       const SizedBox(height: 20),
                       Text(
@@ -504,11 +506,11 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: cardColor.withOpacity(0.9),
+          color: cardColor.withValues(alpha: 0.9),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -523,11 +525,11 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: cardColor.withOpacity(0.9),
+            color: cardColor.withValues(alpha: 0.9),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -541,11 +543,11 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
         Container(
           margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
           decoration: BoxDecoration(
-            color: cardColor.withOpacity(0.9),
+            color: cardColor.withValues(alpha: 0.9),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -593,8 +595,8 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
                   colors: [
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -620,7 +622,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -767,7 +769,7 @@ class ArticleDetailScreenState extends State<ArticleDetailScreen> with TickerPro
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),

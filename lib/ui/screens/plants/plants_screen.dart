@@ -124,7 +124,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -143,7 +143,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -323,7 +323,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -373,7 +373,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -441,7 +441,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -453,7 +453,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
               Icon(
                 Icons.eco_outlined,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -691,7 +691,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
             Icon(
               Icons.eco,
               size: 64,
-              color: textSecondary.withOpacity(0.5),
+              color: textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -728,7 +728,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -801,7 +801,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -813,7 +813,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
               Icon(
                 Icons.search_off,
                 size: 48,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -838,7 +838,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
                 'Coba kata kunci lain atau kategori yang berbeda',
                 style: TextStyle(
                   fontSize: 12,
-                  color: textSecondary.withOpacity(0.8),
+                  color: textSecondary.withValues(alpha: 0.8),
                 ),
                 textAlign: TextAlign.center,
               ),

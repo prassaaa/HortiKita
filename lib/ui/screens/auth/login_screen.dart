@@ -249,7 +249,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryColor.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -304,7 +304,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -392,7 +392,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  disabledBackgroundColor: primaryColor.withOpacity(0.6),
+                  disabledBackgroundColor: primaryColor.withValues(alpha: 0.6),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shadowColor: Colors.transparent,
@@ -578,6 +578,9 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
               }
               
               try {
+                final messenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
+                
                 setState(() {
                   _isLoading = true;
                 });
@@ -587,29 +590,32 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                     .doc(user.uid)
                     .update({'role': 'admin'});
                     
-                setState(() {
-                  _isLoading = false;
-                });
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Role berhasil diubah menjadi admin'),
-                    backgroundColor: primaryLight,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    margin: const EdgeInsets.all(16),
-                  ),
-                );
-                
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-                );
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: const Text('Role berhasil diubah menjadi admin'),
+                      backgroundColor: primaryLight,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                  
+                  navigator.pushReplacement(
+                    MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                  );
+                }
               } catch (e) {
-                setState(() {
-                  _isLoading = false;
-                });
-                _showErrorSnackBar('Error: $e');
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  _showErrorSnackBar('Error: $e');
+                }
               }
             },
           ),
@@ -625,27 +631,32 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
               }
               
               try {
+                final messenger = ScaffoldMessenger.of(context);
                 final doc = await _firestore
                     .collection('users')
                     .doc(user.uid)
                     .get();
                     
-                if (doc.exists) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('User data: $data'),
-                      duration: const Duration(seconds: 5),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
-                } else {
-                  _showErrorSnackBar('User document not found');
+                if (mounted) {
+                  if (doc.exists) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text('User data: $data'),
+                        duration: const Duration(seconds: 5),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        margin: const EdgeInsets.all(16),
+                      ),
+                    );
+                  } else {
+                    _showErrorSnackBar('User document not found');
+                  }
                 }
               } catch (e) {
-                _showErrorSnackBar('Error: $e');
+                if (mounted) {
+                  _showErrorSnackBar('Error: $e');
+                }
               }
             },
           ),
@@ -753,19 +764,20 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                       onPressed: () async {
                         final email = resetEmailController.text.trim();
                         if (email.isEmpty) {
+                          // Tampilkan error di scaffold utama, karena dialog akan ditutup
                           _showErrorSnackBar('Silakan masukkan email');
                           return;
                         }
 
-                        final navigatorContext = dialogContext;
+                        // TUTUP DIALOG SEBELUM ASYNC CALL
+                        Navigator.pop(dialogContext);
 
                         try {
                           await _auth.sendPasswordResetEmail(email: email);
                           
                           if (!mounted) return;
-                          Navigator.pop(navigatorContext);
                           
-                          if (!mounted) return;
+                          // Gunakan context utama yang sudah dijaga dengan 'mounted'
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Link reset password telah dikirim ke email Anda'),
@@ -777,12 +789,8 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                           );
                         } catch (e) {
                           _logger.e('Error saat reset password: $e');
-                          
                           if (!mounted) return;
-                          Navigator.pop(navigatorContext);
-                          
-                          if (!mounted) return;
-                          _showErrorSnackBar('Gagal mengirim email reset');
+                          _showErrorSnackBar('Gagal mengirim email reset. Pastikan email benar.');
                         }
                       },
                       style: ElevatedButton.styleFrom(
