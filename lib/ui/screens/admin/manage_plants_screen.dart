@@ -168,7 +168,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -193,7 +193,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -363,7 +363,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -420,7 +420,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -488,7 +488,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -500,7 +500,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
               Icon(
                 Icons.eco_outlined,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -557,7 +557,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -569,7 +569,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
               Icon(
                 Icons.search_off,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -604,7 +604,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -619,7 +619,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -850,10 +850,12 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        final plantProvider = Provider.of<PlantProvider>(context, listen: false);
                         try {
                           Navigator.pop(context);
                           
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: const Row(
                                 children: [
@@ -877,11 +879,10 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
                             ),
                           );
                           
-                          await Provider.of<PlantProvider>(context, listen: false)
-                            .deletePlant(plant.id);
+                          await plantProvider.deletePlant(plant.id);
                             
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(
                                 content: const Row(
                                   children: [
@@ -899,7 +900,7 @@ class ManagePlantsScreenState extends State<ManagePlantsScreen> with TickerProvi
                           }
                         } catch (e) {
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(
                                 content: Row(
                                   children: [

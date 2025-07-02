@@ -169,7 +169,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -195,7 +195,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -368,7 +368,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -434,7 +434,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -502,7 +502,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -514,7 +514,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
               Icon(
                 Icons.article_outlined,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -580,7 +580,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -592,7 +592,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
               Icon(
                 Icons.search_off,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -629,7 +629,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -645,7 +645,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -904,10 +904,12 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        final articleProvider = Provider.of<ArticleProvider>(context, listen: false);
                         try {
                           Navigator.pop(context);
                           
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: const Row(
                                 children: [
@@ -931,11 +933,10 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                             ),
                           );
                           
-                          await Provider.of<ArticleProvider>(context, listen: false)
-                            .deleteArticle(article.id);
+                          await articleProvider.deleteArticle(article.id);
                             
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(
                                 content: const Row(
                                   children: [
@@ -953,7 +954,7 @@ class ManageArticlesScreenState extends State<ManageArticlesScreen> with TickerP
                           }
                         } catch (e) {
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(
                                 content: Row(
                                   children: [

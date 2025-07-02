@@ -271,7 +271,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -307,7 +307,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -413,7 +413,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
         });
       },
       backgroundColor: cardColor,
-      selectedColor: chipColor.withOpacity(0.1),
+      selectedColor: chipColor.withValues(alpha: 0.1),
       showCheckmark: false,
       side: BorderSide(
         color: isSelected ? chipColor : dividerColor,
@@ -471,7 +471,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -483,7 +483,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -540,7 +540,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -597,7 +597,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -684,7 +684,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -696,7 +696,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
               Icon(
                 _searchQuery.isNotEmpty ? Icons.search_off : Icons.people_outline,
                 size: 64,
-                color: textSecondary.withOpacity(0.6),
+                color: textSecondary.withValues(alpha: 0.6),
               ),
               const SizedBox(height: 16),
               Text(
@@ -736,7 +736,7 @@ class ManageUsersScreenState extends State<ManageUsersScreen> with TickerProvide
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),

@@ -324,7 +324,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -349,7 +349,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -410,13 +410,13 @@ class EditPlantScreenState extends State<EditPlantScreen>
           end: Alignment.bottomRight,
           colors: [
             primarySurface,
-            primarySurface.withOpacity(0.7),
+            primarySurface.withValues(alpha: 0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.08),
+            color: primaryColor.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -460,7 +460,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -610,7 +610,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
         else
           ..._plantingSteps.asMap().entries.map((entry) {
             return _buildPlantingStepField(entry.key, entry.value);
-          }).toList(),
+          }),
       ],
     );
   }
@@ -647,7 +647,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
         else
           ..._careInstructions.asMap().entries.map((entry) {
             return _buildCareInstructionField(entry.key, entry.value);
-          }).toList(),
+          }),
       ],
     );
   }
@@ -665,7 +665,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -882,7 +882,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: dividerColor.withOpacity(0.3)),
+        border: Border.all(color: dividerColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,7 +893,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: primaryLight.withOpacity(0.1),
+                  color: primaryLight.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
@@ -942,7 +942,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: dividerColor.withOpacity(0.5)),
+                borderSide: BorderSide(color: dividerColor.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -969,7 +969,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: dividerColor.withOpacity(0.5)),
+                borderSide: BorderSide(color: dividerColor.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -1002,7 +1002,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: dividerColor.withOpacity(0.3)),
+        border: Border.all(color: dividerColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1013,7 +1013,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
@@ -1059,7 +1059,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: dividerColor.withOpacity(0.5)),
+                borderSide: BorderSide(color: dividerColor.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -1086,7 +1086,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: dividerColor.withOpacity(0.5)),
+                borderSide: BorderSide(color: dividerColor.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -1125,7 +1125,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: primaryLight.withOpacity(0.3),
+            color: primaryLight.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1176,14 +1176,14 @@ class EditPlantScreenState extends State<EditPlantScreen>
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: dividerColor.withOpacity(0.5)),
+        border: Border.all(color: dividerColor.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
           Icon(
             icon,
             size: 48,
-            color: textSecondary.withOpacity(0.5),
+            color: textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 12),
           Text(
@@ -1198,7 +1198,7 @@ class EditPlantScreenState extends State<EditPlantScreen>
           Text(
             subtitle,
             style: TextStyle(
-              color: textSecondary.withOpacity(0.7),
+              color: textSecondary.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),
