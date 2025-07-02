@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import '../auth/login_screen.dart';
 import 'manage_plants_screen.dart';
 import 'manage_articles_screen.dart';
@@ -17,6 +18,7 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> with TickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
   String _userName = "Admin";
   bool _isLoading = true;
   
@@ -100,7 +102,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
       _slideController.forward();
       
     } catch (e) {
-      print('Error loading user data: $e');
+      _logger.e('Error loading user data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -139,7 +141,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
         });
       }
     } catch (e) {
-      print('Error loading statistics: $e');
+      _logger.e('Error loading statistics: $e');
       if (mounted) {
         setState(() {
           _statsLoading = false;
@@ -185,7 +187,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
         );
       }
     } catch (e) {
-      print('Error signing out: $e');
+      _logger.e('Error signing out: $e');
     }
   }
 
@@ -251,7 +253,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -326,7 +328,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
             color: cardColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -360,13 +362,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
           end: Alignment.bottomRight,
           colors: [
             primarySurface,
-            primarySurface.withOpacity(0.7),
+            primarySurface.withValues(alpha: 0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.08),
+            color: primaryColor.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -408,7 +410,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -469,7 +471,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -481,7 +483,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -622,12 +624,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
           ],
-          border: Border.all(color: dividerColor.withOpacity(0.5)),
+          border: Border.all(color: dividerColor.withValues(alpha: 0.5)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,7 +638,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 20),
