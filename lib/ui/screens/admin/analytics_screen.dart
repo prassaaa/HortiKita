@@ -271,66 +271,100 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
         ),
         const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+        // Use Row instead of Wrap for better control
+        Row(
           children: [
-            _buildStatCard(
-              'Total Pengguna',
-              overview.totalUsers.toString(),
-              Icons.people,
-              primaryColor,
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Pengguna',
+                  overview.totalUsers.toString(),
+                  Icons.people,
+                  primaryColor,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Total Tanaman',
-              overview.totalPlants.toString(),
-              Icons.eco,
-              Colors.green,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Tanaman',
+                  overview.totalPlants.toString(),
+                  Icons.eco,
+                  Colors.green,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Total Artikel',
-              overview.totalArticles.toString(),
-              Icons.article,
-              Colors.blue,
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Artikel',
+                  overview.totalArticles.toString(),
+                  Icons.article,
+                  Colors.blue,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Total Percakapan',
-              overview.totalConversations.toString(),
-              Icons.chat,
-              Colors.orange,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Percakapan',
+                  overview.totalConversations.toString(),
+                  Icons.chat,
+                  Colors.orange,
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 24),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 3,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.3,
+        // Secondary stats with Row layout
+        Row(
           children: [
-            _buildStatCard(
-              'Aktif Hari Ini',
-              overview.activeUsersToday.toString(),
-              Icons.today,
-              Colors.purple,
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.5, // Slightly taller for smaller text
+                child: _buildStatCard(
+                  'Aktif Hari Ini',
+                  overview.activeUsersToday.toString(),
+                  Icons.today,
+                  Colors.purple,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Aktif Minggu Ini',
-              overview.activeUsersWeek.toString(),
-              Icons.date_range,
-              Colors.indigo,
+            const SizedBox(width: 12),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.5, // Slightly taller for smaller text
+                child: _buildStatCard(
+                  'Aktif Minggu Ini',
+                  overview.activeUsersWeek.toString(),
+                  Icons.date_range,
+                  Colors.indigo,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Aktif Bulan Ini',
-              overview.activeUsersMonth.toString(),
-              Icons.calendar_month,
-              Colors.teal,
+            const SizedBox(width: 12),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.5, // Slightly taller for smaller text
+                child: _buildStatCard(
+                  'Aktif Bulan Ini',
+                  overview.activeUsersMonth.toString(),
+                  Icons.calendar_month,
+                  Colors.teal,
+                ),
+              ),
             ),
           ],
         ),
@@ -340,49 +374,59 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+      child: FittedBox( // Use FittedBox to scale content down if needed
+        fit: BoxFit.scaleDown,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: IntrinsicHeight( // Ensures minimum height
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(icon, color: color, size: 14),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    color: textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip, // Use clip instead of ellipsis
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -539,10 +583,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Row(
+          Wrap( // Change from Row to Wrap
+            spacing: 16,
+            runSpacing: 8,
             children: [
               _buildLegendItem('Pengguna', Colors.blue),
-              const SizedBox(width: 24),
               _buildLegendItem('Percakapan', Colors.orange),
             ],
           ),
@@ -552,26 +597,34 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8, // Reduced from 12
+            height: 8, // Reduced from 12
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: textSecondary,
+          const SizedBox(width: 4), // Reduced from 8
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10, // Reduced from 12
+              color: textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -590,37 +643,59 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
         ),
         const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+        // Use Row instead of Wrap for better control
+        Row(
           children: [
-            _buildStatCard(
-              'Total Views',
-              metrics['totalViews']?.toInt().toString() ?? '0',
-              Icons.visibility,
-              Colors.blue,
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Views',
+                  metrics['totalViews']?.toInt().toString() ?? '0',
+                  Icons.visibility,
+                  Colors.blue,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Total Likes',
-              metrics['totalLikes']?.toInt().toString() ?? '0',
-              Icons.favorite,
-              Colors.red,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Likes',
+                  metrics['totalLikes']?.toInt().toString() ?? '0',
+                  Icons.favorite,
+                  Colors.red,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Engagement Rate',
-              '${metrics['engagementRate']?.toStringAsFixed(1) ?? '0'}%',
-              Icons.trending_up,
-              Colors.green,
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Engagement Rate',
+                  '${metrics['engagementRate']?.toStringAsFixed(1) ?? '0'}%',
+                  Icons.trending_up,
+                  Colors.green,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Avg Rating',
-              metrics['avgRating']?.toStringAsFixed(1) ?? '0',
-              Icons.star,
-              Colors.amber,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Avg Rating',
+                  metrics['avgRating']?.toStringAsFixed(1) ?? '0',
+                  Icons.star,
+                  Colors.amber,
+                ),
+              ),
             ),
           ],
         ),
@@ -805,37 +880,59 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
         ),
         const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+        // Use Row instead of Wrap for better control
+        Row(
           children: [
-            _buildStatCard(
-              'Total Percakapan',
-              chatbotAnalytics.totalConversations.toString(),
-              Icons.chat,
-              Colors.blue,
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Percakapan',
+                  chatbotAnalytics.totalConversations.toString(),
+                  Icons.chat,
+                  Colors.blue,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Total Pesan',
-              chatbotAnalytics.totalMessages.toString(),
-              Icons.message,
-              Colors.green,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Total Pesan',
+                  chatbotAnalytics.totalMessages.toString(),
+                  Icons.message,
+                  Colors.green,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Rata-rata Panjang',
-              chatbotAnalytics.avgConversationLength.toStringAsFixed(1),
-              Icons.timeline,
-              Colors.orange,
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Rata-rata Panjang',
+                  chatbotAnalytics.avgConversationLength.toStringAsFixed(1),
+                  Icons.timeline,
+                  Colors.orange,
+                ),
+              ),
             ),
-            _buildStatCard(
-              'Kepuasan User',
-              '${chatbotAnalytics.userSatisfactionScore.toStringAsFixed(1)}/5',
-              Icons.star,
-              Colors.amber,
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8, // Width:Height ratio
+                child: _buildStatCard(
+                  'Kepuasan User',
+                  '${chatbotAnalytics.userSatisfactionScore.toStringAsFixed(1)}/5',
+                  Icons.star,
+                  Colors.amber,
+                ),
+              ),
             ),
           ],
         ),
@@ -1050,25 +1147,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         children: [
           Row(
             children: [
-              const Text(
-                'Content Gaps & Recommendations',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
+              Flexible( // Make text flexible
+                child: const Text(
+                  'Content Gaps & Recommendations',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis, // Add overflow handling
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Reduced padding
                 decoration: BoxDecoration(
                   color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6), // Reduced radius
                 ),
                 child: Text(
                   'Prioritas Tinggi',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9, // Reduced font size
                     fontWeight: FontWeight.w600,
                     color: Colors.red.shade700,
                   ),
@@ -1320,8 +1420,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Wrap( // Change from Row to Wrap to prevent overflow
+            spacing: 8, // Reduced spacing
+            runSpacing: 8,
             children: [
               _buildLegendItem('Pagi (6-12)', Colors.orange),
               _buildLegendItem('Siang (12-18)', Colors.blue),
