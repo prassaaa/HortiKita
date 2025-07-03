@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import '../data/models/analytics/real_analytics_models.dart';
+import 'user_engagement_service.dart';
 
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
@@ -64,7 +65,7 @@ class AnalyticsService {
     startSession(screenName);
   }
 
-  // Content Interaction Tracking
+  // Content Interaction Tracking (Enhanced)
   Future<void> trackContentView(String contentId, String contentType) async {
     if (_userId == null) return;
 
@@ -80,6 +81,11 @@ class AnalyticsService {
       );
 
       await _firestore.collection('content_interactions').add(interaction.toMap());
+      
+      // Also track in engagement service
+      final UserEngagementService engagementService = UserEngagementService();
+      await engagementService.trackContentView(contentId, contentType);
+      
       _logger.d('Tracked view: $contentType/$contentId');
     } catch (e) {
       _logger.e('Error tracking content view: $e');
@@ -125,6 +131,11 @@ class AnalyticsService {
       );
 
       await _firestore.collection('content_interactions').add(interaction.toMap());
+      
+      // Also track in engagement service
+      final UserEngagementService engagementService = UserEngagementService();
+      await engagementService.trackContentShare(contentId, contentType, shareMethod);
+      
       _logger.d('Tracked share: $contentType/$contentId via $shareMethod');
     } catch (e) {
       _logger.e('Error tracking content share: $e');

@@ -8,6 +8,13 @@ class AppConstants {
   static const String articlesCollection = 'articles';
   static const String chatHistoryCollection = 'chat_history';
   
+  // User Engagement Collections
+  static const String userFavoritesCollection = 'user_favorites';
+  static const String contentEngagementCollection = 'content_engagement';
+  static const String contentRatingsCollection = 'content_ratings';
+  static const String userSessionsCollection = 'user_sessions';
+  static const String contentInteractionsCollection = 'content_interactions';
+  
   // Plant Categories
   static const List<String> plantCategories = [
     'Sayuran',

@@ -9,6 +9,7 @@ import '../articles/article_detail_screen.dart';
 import '../articles/articles_screen.dart';
 import '../plants/plants_screen.dart';
 import '../chatbot/chatbot_screen.dart';
+import '../favorites/favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -252,6 +253,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       elevation: 0,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      actions: [
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FavoritesScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.bookmark_border),
+          color: primaryColor,
+          tooltip: 'Favorit',
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
         title: Text(

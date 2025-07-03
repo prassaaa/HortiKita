@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../../../data/models/plant_model.dart';
+import '../../../data/providers/user_engagement_provider.dart';
+import '../../../services/analytics_service.dart';
+import '../../widgets/engagement/content_rating_widget.dart';
+import '../../widgets/engagement/content_engagement_widget.dart';
 
 class PlantDetailScreen extends StatefulWidget {
   final Plant plant;
@@ -15,7 +20,7 @@ class PlantDetailScreen extends StatefulWidget {
 }
 
 class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProviderStateMixin {
-  bool _isBookmarked = false;
+  final AnalyticsService _analytics = AnalyticsService();
   
   // Animation Controllers
   late AnimationController _fadeController;
@@ -28,6 +33,8 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     super.initState();
     _initializeAnimations();
     _startAnimations();
+    _trackView();
+    _loadUserEngagement();
   }
   
   void _initializeAnimations() {
@@ -63,6 +70,31 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     _slideController.forward();
   }
   
+  void _trackView() {
+    // Track content view
+    _analytics.trackContentView(widget.plant.id, 'plant');
+    
+    // Track in engagement provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final engagementProvider = Provider.of<UserEngagementProvider>(
+        context, 
+        listen: false
+      );
+      engagementProvider.trackContentView(widget.plant.id, 'plant');
+    });
+  }
+  
+  void _loadUserEngagement() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final engagementProvider = Provider.of<UserEngagementProvider>(
+        context, 
+        listen: false
+      );
+      engagementProvider.loadContentEngagement(widget.plant.id);
+      engagementProvider.loadUserRating(widget.plant.id);
+    });
+  }
+  
   @override
   void dispose() {
     _fadeController.dispose();
@@ -80,50 +112,109 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
   static const Color textSecondary = Color(0xFF6B6B6B);
   static const Color dividerColor = Color(0xFFE0E0E0);
 
-  void _toggleBookmark() {
-    setState(() {
-      _isBookmarked = !_isBookmarked;
-    });
-    
-    // Show feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Text(_isBookmarked ? 'Tanaman disimpan' : 'Tanaman dihapus dari simpanan'),
-          ],
-        ),
-        backgroundColor: _isBookmarked ? primaryLight : textSecondary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
+  void _toggleBookmark() async {
+    final engagementProvider = Provider.of<UserEngagementProvider>(
+      context, 
+      listen: false
     );
+    
+    try {
+      final isFavorited = await engagementProvider.togglePlantFavorite(widget.plant.id);
+      
+      // Track analytics
+      _analytics.trackContentFavorite(widget.plant.id, 'plant', isFavorited);
+      
+      // Show feedback
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  isFavorited ? Icons.bookmark : Icons.bookmark_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(isFavorited ? 'Tanaman disimpan' : 'Tanaman dihapus dari simpanan'),
+              ],
+            ),
+            backgroundColor: isFavorited ? primaryLight : textSecondary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Text('Gagal menyimpan tanaman'),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 
-  void _sharePlant() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.share, color: Colors.white, size: 20),
-            SizedBox(width: 12),
-            Text('Fitur berbagi akan segera tersedia'),
-          ],
-        ),
-        backgroundColor: primaryLight,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
+  void _sharePlant() async {
+    final engagementProvider = Provider.of<UserEngagementProvider>(
+      context, 
+      listen: false
     );
+    
+    try {
+      // Track share action
+      await engagementProvider.trackContentShare(widget.plant.id, 'plant', 'internal');
+      _analytics.trackContentShare(widget.plant.id, 'plant', 'internal');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.share, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Text('Tanaman berhasil dibagikan!'),
+              ],
+            ),
+            backgroundColor: primaryLight,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Text('Gagal membagikan tanaman'),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -205,12 +296,17 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
               ),
             ],
           ),
-          child: IconButton(
-            icon: Icon(
-              _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              color: _isBookmarked ? primaryLight : textPrimary,
-            ),
-            onPressed: _toggleBookmark,
+          child: Consumer<UserEngagementProvider>(
+            builder: (context, engagementProvider, child) {
+              final isBookmarked = engagementProvider.isPlantFavorited(widget.plant.id);
+              return IconButton(
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: isBookmarked ? primaryLight : textPrimary,
+                ),
+                onPressed: _toggleBookmark,
+              );
+            },
           ),
         ),
       ],
@@ -337,6 +433,34 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
                     color: textPrimary,
                   ),
                   textAlign: TextAlign.justify,
+                ),
+              ],
+            ),
+          ),
+          
+          // Engagement Metrics Section
+          _buildSectionCard(
+            'Statistik & Ulasan',
+            Icons.analytics_outlined,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ContentEngagementWidget(
+                  contentId: widget.plant.id,
+                  contentType: 'plant',
+                ),
+                const SizedBox(height: 16),
+                ContentRatingWidget(
+                  contentId: widget.plant.id,
+                  contentType: 'plant',
+                  onRated: () {
+                    // Refresh engagement data after rating
+                    final engagementProvider = Provider.of<UserEngagementProvider>(
+                      context,
+                      listen: false,
+                    );
+                    engagementProvider.loadContentEngagement(widget.plant.id);
+                  },
                 ),
               ],
             ),
@@ -627,29 +751,35 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
   }
 
   Widget _buildFloatingActions() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        FloatingActionButton(
-          heroTag: "bookmark",
-          onPressed: _toggleBookmark,
-          backgroundColor: _isBookmarked ? primaryLight : cardColor,
-          foregroundColor: _isBookmarked ? Colors.white : textPrimary,
-          elevation: 4,
-          child: Icon(
-            _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FloatingActionButton(
-          heroTag: "share",
-          onPressed: _sharePlant,
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          child: const Icon(Icons.share),
-        ),
-      ],
+    return Consumer<UserEngagementProvider>(
+      builder: (context, engagementProvider, child) {
+        final isBookmarked = engagementProvider.isPlantFavorited(widget.plant.id);
+        
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              heroTag: "bookmark",
+              onPressed: _toggleBookmark,
+              backgroundColor: isBookmarked ? primaryLight : cardColor,
+              foregroundColor: isBookmarked ? Colors.white : textPrimary,
+              elevation: 4,
+              child: Icon(
+                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FloatingActionButton(
+              heroTag: "share",
+              onPressed: _sharePlant,
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              child: const Icon(Icons.share),
+            ),
+          ],
+        );
+      },
     );
   }
 

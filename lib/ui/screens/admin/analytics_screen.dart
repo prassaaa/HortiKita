@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../data/providers/analytics_provider.dart';
+import '../../../data/providers/user_engagement_provider.dart';
 import '../../../data/models/analytics/chatbot_analytics_model.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -18,11 +19,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // Changed to 4 tabs
     
     // Load analytics data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AnalyticsProvider>().loadAnalyticsData();
+      context.read<UserEngagementProvider>().loadAllEngagementData();
     });
   }
 
@@ -84,6 +86,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             Tab(text: 'Overview'),
             Tab(text: 'Content'),
             Tab(text: 'Chatbot'),
+            Tab(text: 'Engagement'),
           ],
         ),
       ),
@@ -103,6 +106,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               _buildOverviewTab(provider),
               _buildContentTab(provider),
               _buildChatbotTab(provider),
+              _buildEngagementTab(),
             ],
           );
         },
@@ -229,6 +233,354 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           _buildContentGapsSection(chatbotAnalytics.contentGaps),
           const SizedBox(height: 32),
           _buildHourlyUsageChart(chatbotAnalytics.hourlyUsage),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEngagementTab() {
+    return Consumer<UserEngagementProvider>(
+      builder: (context, engagementProvider, child) {
+        if (engagementProvider.isLoading) {
+          return _buildLoadingState();
+        }
+
+        if (engagementProvider.error.isNotEmpty) {
+          return _buildErrorState(engagementProvider.error);
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildEngagementOverview(engagementProvider),
+              const SizedBox(height: 32),
+              _buildUserActivitySection(engagementProvider),
+              const SizedBox(height: 32),
+              _buildRetentionSection(engagementProvider),
+              const SizedBox(height: 32),
+              _buildEngagementTrendsChart(engagementProvider),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEngagementOverview(UserEngagementProvider provider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Ringkasan Engagement',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8,
+                child: _buildStatCard(
+                  'Popular Plants',
+                  provider.popularPlants.length.toString(),
+                  Icons.trending_up,
+                  primaryColor,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8,
+                child: _buildStatCard(
+                  'Popular Articles',
+                  provider.popularArticles.length.toString(),
+                  Icons.article,
+                  Colors.blue,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8,
+                child: _buildStatCard(
+                  'Trending Plants',
+                  provider.trendingPlants.length.toString(),
+                  Icons.local_fire_department,
+                  Colors.orange,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.8,
+                child: _buildStatCard(
+                  'Trending Articles',
+                  provider.trendingArticles.length.toString(),
+                  Icons.trending_up,
+                  Colors.green,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserActivitySection(UserEngagementProvider provider) {
+    final popularPlants = provider.popularPlants;
+    
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Top Popular Plants',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (popularPlants.isNotEmpty)
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: popularPlants.take(5).length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                final plant = popularPlants[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: primarySurface,
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    plant['title'] ?? 'Unknown Plant',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${plant['views'] ?? 0} views • ${plant['likes'] ?? 0} likes',
+                    style: const TextStyle(color: textSecondary),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: primarySurface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Popular',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            const Center(
+              child: Text(
+                'Belum ada data tanaman populer',
+                style: TextStyle(color: textSecondary),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRetentionSection(UserEngagementProvider provider) {
+    final trendingArticles = provider.trendingArticles;
+    
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Top Trending Articles',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (trendingArticles.isNotEmpty)
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: trendingArticles.take(5).length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                final article = trendingArticles[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.orange.shade50,
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    article['title'] ?? 'Unknown Article',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    '${article['views'] ?? 0} views • ${article['likes'] ?? 0} likes',
+                    style: const TextStyle(color: textSecondary),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Trending',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            const Center(
+              child: Text(
+                'Belum ada artikel trending',
+                style: TextStyle(color: textSecondary),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEngagementTrendsChart(UserEngagementProvider provider) {
+    final insights = provider.userInsights;
+    
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'User Engagement Insights',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (insights.isNotEmpty)
+            Column(
+              children: insights.entries.map((entry) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    title: Text(
+                      entry.key.replaceAll('_', ' ').toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textPrimary,
+                      ),
+                    ),
+                    trailing: Text(
+                      entry.value.toString(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            )
+          else
+            const Center(
+              child: Text(
+                'Belum ada data engagement insights',
+                style: TextStyle(color: textSecondary),
+              ),
+            ),
         ],
       ),
     );
