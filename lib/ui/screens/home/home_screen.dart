@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../../../services/analytics_service.dart';
 import '../auth/login_screen.dart';
 import '../articles/article_detail_screen.dart';
 import '../articles/articles_screen.dart';
@@ -20,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final Logger _logger = Logger();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AnalyticsService _analytics = AnalyticsService();
   String _userName = "Pengguna";
   bool _isLoading = true;
   
@@ -34,6 +36,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _initializeAnimations();
     _loadUserData();
+    
+    // Start analytics session
+    _analytics.startSession('home');
   }
   
   void _initializeAnimations() {
@@ -108,6 +113,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
+    
+    // End analytics session
+    _analytics.endSession();
+    
     super.dispose();
   }
 
@@ -370,12 +379,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildTabletFeatureGrid() {
     final features = [
       _getFeatureData('Katalog Tanaman', 'Informasi berbagai tanaman hortikultura', Icons.eco, () {
+        _analytics.switchScreen('plants');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const PlantsScreen()));
       }),
       _getFeatureData('Chatbot', 'Tanya jawab seputar hortikultura', Icons.chat_bubble_outline, () {
+        _analytics.switchScreen('chatbot');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()));
       }),
       _getFeatureData('Artikel', 'Tips dan informasi hortikultura', Icons.article_outlined, () {
+        _analytics.switchScreen('articles');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesScreen()));
       }),
     ];
@@ -397,12 +409,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildMobileFeatureScroll() {
     final features = [
       _getFeatureData('Katalog Tanaman', 'Informasi berbagai tanaman hortikultura', Icons.eco, () {
+        _analytics.switchScreen('plants');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const PlantsScreen()));
       }),
       _getFeatureData('Chatbot', 'Tanya jawab seputar hortikultura', Icons.chat_bubble_outline, () {
+        _analytics.switchScreen('chatbot');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()));
       }),
       _getFeatureData('Artikel', 'Tips dan informasi hortikultura', Icons.article_outlined, () {
+        _analytics.switchScreen('articles');
         Navigator.push(context, MaterialPageRoute(builder: (_) => const ArticlesScreen()));
       }),
     ];

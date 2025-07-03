@@ -6,10 +6,12 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../models/chat_message_model.dart';
 import '../repositories/chat_repository.dart';
 import '../../services/gemini_service.dart';
+import '../../services/analytics_service.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository;
   final Logger _logger = Logger();
+  final AnalyticsService _analytics = AnalyticsService();
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String _error = '';
@@ -41,6 +43,14 @@ class ChatProvider with ChangeNotifier {
 
       // Kirim pesan ke repository dan dapatkan respons
       final response = await _chatRepository.sendMessage(userId, message, null, null);
+
+      // Track chatbot interaction
+      final topics = _analytics.extractTopics(message);
+      await _analytics.trackChatbotInteraction(
+        question: message,
+        response: response,
+        topics: topics,
+      );
 
       // Tambahkan respons AI ke list
       final aiMsg = ChatMessage(

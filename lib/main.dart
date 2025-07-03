@@ -9,6 +9,7 @@ import 'data/providers/chat_provider.dart';
 import 'data/providers/plant_provider.dart';
 import 'data/providers/article_provider.dart';
 import 'data/providers/analytics_provider.dart';
+import 'services/analytics_service.dart';
 import 'ui/screens/splash/splash_screen.dart';
 import 'ui/themes/app_theme.dart';
 
@@ -27,6 +28,9 @@ final logger = Logger(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  
+  // Initialize Analytics Service
+  AnalyticsService();
   
   // Setup logger filter berdasarkan mode aplikasi
   Logger.level = kReleaseMode ? Level.warning : Level.debug;
