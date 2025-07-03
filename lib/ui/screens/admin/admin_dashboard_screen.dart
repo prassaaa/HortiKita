@@ -7,6 +7,7 @@ import '../auth/login_screen.dart';
 import 'manage_plants_screen.dart';
 import 'manage_articles_screen.dart';
 import 'manage_users_screen.dart';
+import 'analytics_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -584,20 +585,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Ticker
               Icons.bar_chart,
               Colors.purple,
               () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.white, size: 20),
-                        SizedBox(width: 12),
-                        Text('Fitur statistik akan segera hadir'),
-                      ],
-                    ),
-                    backgroundColor: primaryLight,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    margin: const EdgeInsets.all(16),
-                  ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
                 );
               },
             ),
