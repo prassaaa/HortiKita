@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:logger/logger.dart';
 import '../../../data/providers/analytics_provider.dart';
 import '../../../data/providers/user_engagement_provider.dart';
 import '../../../data/models/analytics/chatbot_analytics_model.dart';
+import '../../../data/models/analytics/content_analytics_model.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -12,20 +14,39 @@ class AnalyticsScreen extends StatefulWidget {
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
-class _AnalyticsScreenState extends State<AnalyticsScreen> 
+class _AnalyticsScreenState extends State<AnalyticsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final Logger _logger = Logger();
   
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this); // Changed to 4 tabs
-    
+
     // Load analytics data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AnalyticsProvider>().loadAnalyticsData();
-      context.read<UserEngagementProvider>().loadAllEngagementData();
+      _loadAnalyticsData();
     });
+  }
+
+  Future<void> _loadAnalyticsData() async {
+    try {
+      final analyticsProvider = context.read<AnalyticsProvider>();
+      final engagementProvider = context.read<UserEngagementProvider>();
+
+      _logger.d('Loading analytics data...');
+
+      // Load analytics data
+      await analyticsProvider.loadAnalyticsData();
+      await engagementProvider.loadAllEngagementData();
+
+      _logger.d('Analytics data loaded successfully');
+      _logger.d('Top articles count: ${analyticsProvider.topArticles.length}');
+      _logger.d('Top plants count: ${analyticsProvider.topPlants.length}');
+    } catch (e) {
+      _logger.e('Error loading analytics data: $e');
+    }
   }
 
   @override
@@ -1055,8 +1076,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildTopPlantsSection(List<dynamic> topPlants) {
-    if (topPlants.isEmpty) return const SizedBox.shrink();
+  Widget _buildTopPlantsSection(List<ContentPerformance> topPlants) {
+    if (topPlants.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top 10 Tanaman Populer',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Center(
+              child: Text(
+                'Belum ada data tanaman tersedia',
+                style: TextStyle(
+                  color: textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -1136,8 +1195,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildTopArticlesSection(List<dynamic> topArticles) {
-    if (topArticles.isEmpty) return const SizedBox.shrink();
+  Widget _buildTopArticlesSection(List<ContentPerformance> topArticles) {
+    if (topArticles.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top 10 Artikel Populer',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Center(
+              child: Text(
+                'Belum ada data artikel tersedia',
+                style: TextStyle(
+                  color: textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(24),
