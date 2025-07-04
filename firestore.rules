@@ -1,0 +1,87 @@
+// Firestore Security Rules untuk Analytics - Updated Version
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection
+    match /users/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Plants collection - public read, admin write
+    match /plants/{document} {
+      allow read: if true;
+      allow write: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Articles collection - public read, admin write
+    match /articles/{document} {
+      allow read: if true;
+      allow write: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Chat history - UPDATED RULES for analytics access
+    match /chat_history/{document} {
+      allow read, write: if request.auth != null;
+      // Allow admin to read all chat history for analytics
+      allow read: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // =============================================================================
+    // ANALYTICS COLLECTIONS - PERMISSIVE RULES FOR TESTING
+    // =============================================================================
+    
+    // User Sessions - More permissive for analytics
+    match /user_sessions/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Content Views - More permissive for analytics
+    match /content_views/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Content Engagement - Public read for analytics
+    match /content_engagement/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Content Interactions - More permissive for analytics
+    match /content_interactions/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Chatbot Interactions - More permissive for analytics
+    match /chatbot_interactions/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Screen Views - More permissive for analytics
+    match /screen_views/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // User Interactions - More permissive for analytics
+    match /user_interactions/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // User Favorites - More permissive for analytics
+    match /user_favorites/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // =============================================================================
+    // TEMPORARY PERMISSIVE RULES FOR DEVELOPMENT
+    // =============================================================================
+    
+    // Allow authenticated users to read/write most collections for development
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

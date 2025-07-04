@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/plant_model.dart';
 import '../../../data/providers/user_engagement_provider.dart';
-import '../../../services/analytics_service.dart';
+import '../../../services/user_tracking_service.dart';
 import '../../widgets/engagement/content_rating_widget.dart';
 import '../../widgets/engagement/content_engagement_widget.dart';
 
@@ -20,7 +20,7 @@ class PlantDetailScreen extends StatefulWidget {
 }
 
 class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProviderStateMixin {
-  final AnalyticsService _analytics = AnalyticsService();
+  final UserTrackingService _tracking = UserTrackingService();
   
   // Animation Controllers
   late AnimationController _fadeController;
@@ -35,6 +35,19 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     _startAnimations();
     _trackView();
     _loadUserEngagement();
+  }
+  
+  void _trackView() {
+    // Track content view
+    _tracking.trackContentView('plant', widget.plant.id, widget.plant.name);
+    _tracking.trackScreenView('plant_detail');
+    
+    // Track analytics (track interaction instead of event)
+    _tracking.trackInteraction('plant_viewed', metadata: {
+      'plant_id': widget.plant.id,
+      'plant_name': widget.plant.name,
+      'category': widget.plant.category,
+    });
   }
   
   void _initializeAnimations() {
@@ -68,20 +81,6 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
   void _startAnimations() {
     _fadeController.forward();
     _slideController.forward();
-  }
-  
-  void _trackView() {
-    // Track content view
-    _analytics.trackContentView(widget.plant.id, 'plant');
-    
-    // Track in engagement provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final engagementProvider = Provider.of<UserEngagementProvider>(
-        context, 
-        listen: false
-      );
-      engagementProvider.trackContentView(widget.plant.id, 'plant');
-    });
   }
   
   void _loadUserEngagement() {
@@ -121,8 +120,16 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     try {
       final isFavorited = await engagementProvider.togglePlantFavorite(widget.plant.id);
       
-      // Track analytics
-      _analytics.trackContentFavorite(widget.plant.id, 'plant', isFavorited);
+      // Track user interaction
+      _tracking.trackContentInteraction(
+        'plant', 
+        widget.plant.id, 
+        isFavorited ? 'favorite' : 'unfavorite',
+        metadata: {
+          'plant_name': widget.plant.name,
+          'category': widget.plant.category,
+        }
+      );
       
       // Show feedback
       if (mounted) {
@@ -177,7 +184,18 @@ class PlantDetailScreenState extends State<PlantDetailScreen> with TickerProvide
     try {
       // Track share action
       await engagementProvider.trackContentShare(widget.plant.id, 'plant', 'internal');
-      _analytics.trackContentShare(widget.plant.id, 'plant', 'internal');
+      
+      // Track user interaction
+      _tracking.trackContentInteraction(
+        'plant', 
+        widget.plant.id, 
+        'share',
+        metadata: {
+          'plant_name': widget.plant.name,
+          'category': widget.plant.category,
+          'share_type': 'internal',
+        }
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

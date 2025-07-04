@@ -11,6 +11,7 @@ import 'data/providers/article_provider.dart';
 import 'data/providers/analytics_provider.dart';
 import 'data/providers/user_engagement_provider.dart';
 import 'services/analytics_service.dart';
+import 'services/user_tracking_service.dart';
 import 'ui/screens/splash/splash_screen.dart';
 import 'ui/themes/app_theme.dart';
 
@@ -30,8 +31,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   
-  // Initialize Analytics Service
+  // Initialize services
   AnalyticsService();
+  UserTrackingService();
   
   // Setup logger filter berdasarkan mode aplikasi
   Logger.level = kReleaseMode ? Level.warning : Level.debug;
@@ -49,6 +51,9 @@ void main() async {
   if (auth.currentUser != null) {
     logger.d('User already logged in: ${auth.currentUser!.email}');
     await _checkUserRole(auth.currentUser!.uid);
+    
+    // Start tracking session for logged in user
+    await UserTrackingService().startSession();
   } else {
     logger.d('No user logged in on app start');
   }

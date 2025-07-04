@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/providers/auth_provider.dart' as local_auth;
 import '../../../data/providers/chat_provider.dart';
 import '../../../data/models/chat_message_model.dart';
+import '../../../services/user_tracking_service.dart';
 import '../../widgets/chatbot/chat_bubble_widget.dart';
 
 class ChatbotScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class ChatbotScreen extends StatefulWidget {
 class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final UserTrackingService _tracking = UserTrackingService();
   String? _selectedImagePath;
   bool _showPreview = false;
   
@@ -32,6 +34,7 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
     super.initState();
     _initializeAnimations();
     _loadChatData();
+    _tracking.trackScreenView('chatbot');
   }
   
   void _initializeAnimations() {
@@ -220,6 +223,13 @@ class ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMi
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest_user";
     
     if (message.isEmpty && _selectedImagePath == null) return;
+    
+    // Track chatbot interaction
+    _tracking.trackInteraction('chatbot_message_sent', metadata: {
+      'message_length': message.length,
+      'has_image': _selectedImagePath != null,
+      'user_id': userId,
+    });
     
     _messageController.clear();
     

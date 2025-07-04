@@ -7,11 +7,13 @@ import '../models/chat_message_model.dart';
 import '../repositories/chat_repository.dart';
 import '../../services/gemini_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/user_tracking_service.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatRepository _chatRepository;
   final Logger _logger = Logger();
   final AnalyticsService _analytics = AnalyticsService();
+  final UserTrackingService _tracking = UserTrackingService();
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String _error = '';
@@ -146,6 +148,15 @@ class ChatProvider with ChangeNotifier {
       );
       _messages.add(aiMsg);
       
+      // Track chatbot interaction
+      final sessionId = 'session_${userId}_${now.millisecondsSinceEpoch}';
+      await _tracking.trackChatbotInteraction(
+        sessionId,
+        message.isEmpty ? 'Foto tanaman' : message,
+        response,
+        topics: _extractTopicsFromMessage(message),
+      );
+      
       // Update pesan user dalam state supaya tetap menunjukkan gambar
       if (imagePath != null) {
         // Pertahankan lokalImagePath untuk tetap menampilkan gambar di UI
@@ -233,5 +244,39 @@ class ChatProvider with ChangeNotifier {
   void clearMessages() {
     _messages = [];
     notifyListeners();
+  }
+
+  // Extract topics from message for analytics
+  List<String> _extractTopicsFromMessage(String message) {
+    final topics = <String>[];
+    final lowerMessage = message.toLowerCase();
+    
+    // Define topic keywords
+    final topicKeywords = {
+      'perawatan': ['rawat', 'cara', 'tips', 'perawatan', 'menjaga', 'pelihara'],
+      'menanam': ['tanam', 'menanam', 'berkebun', 'budidaya', 'semai'],
+      'sayuran': ['sayur', 'sayuran', 'tomat', 'cabai', 'kangkung', 'bayam'],
+      'buah': ['buah', 'jeruk', 'mangga', 'apel', 'pisang', 'jambu'],
+      'hias': ['hias', 'bunga', 'mawar', 'melati', 'anggrek', 'kaktus'],
+      'pupuk': ['pupuk', 'kompos', 'nutrisi', 'pakan', 'vitamin'],
+      'hama': ['hama', 'penyakit', 'kutu', 'serangga', 'ulat', 'jamur'],
+      'penyiraman': ['siram', 'air', 'basah', 'kering', 'penyiraman'],
+      'tanah': ['tanah', 'media', 'pot', 'polybag', 'sekam'],
+      'cahaya': ['cahaya', 'sinar', 'matahari', 'terang', 'gelap'],
+    };
+    
+    // Check which topics are mentioned in the message
+    for (final topic in topicKeywords.entries) {
+      if (topic.value.any((keyword) => lowerMessage.contains(keyword))) {
+        topics.add(topic.key);
+      }
+    }
+    
+    // If no specific topics found, classify as general
+    if (topics.isEmpty) {
+      topics.add('umum');
+    }
+    
+    return topics;
   }
 }

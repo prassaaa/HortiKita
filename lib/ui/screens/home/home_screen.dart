@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../../services/analytics_service.dart';
+import '../../../services/user_tracking_service.dart';
 import '../auth/login_screen.dart';
 import '../articles/article_detail_screen.dart';
 import '../articles/articles_screen.dart';
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AnalyticsService _analytics = AnalyticsService();
+  final UserTrackingService _tracking = UserTrackingService();
   String _userName = "Pengguna";
   bool _isLoading = true;
   
@@ -38,8 +40,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _initializeAnimations();
     _loadUserData();
     
-    // Start analytics session
+    // Start analytics session and track screen view
     _analytics.startSession('home');
+    _tracking.trackScreenView('home');
   }
   
   void _initializeAnimations() {
