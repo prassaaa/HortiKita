@@ -5,11 +5,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 class PlantCard extends StatelessWidget {
   final Plant plant;
   final VoidCallback onTap;
+  final bool useFlexLayout; // New parameter to control layout type
 
   const PlantCard({
     super.key,
     required this.plant,
     required this.onTap,
+    this.useFlexLayout = true, // Default to flex layout for GridView
   });
 
   @override
@@ -34,111 +36,124 @@ class PlantCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Plant Image
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: plant.imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+            useFlexLayout
+                ? Expanded(
+                    flex: 3,
+                    child: _buildImageWidget(),
+                  )
+                : SizedBox(
+                    height: 150,
+                    child: _buildImageWidget(),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Icon(
-                      Icons.error,
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-            ),
 
             // Plant Info
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(8), // Reduced padding
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      plant.name,
-                      style: const TextStyle(
-                        fontSize: 16, // Reduced font size
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2), // Reduced spacing
-                    Text(
-                      plant.scientificName,
-                      style: TextStyle(
-                        fontSize: 12, // Reduced font size
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6), // Reduced spacing
-
-                    // Plant tags
-                    Flexible(
-                      child: Row(
-                        children: [
-                          Flexible(child: _buildTag(plant.category, Colors.green[100]!)),
-                          const SizedBox(width: 4), // Reduced spacing
-                          Flexible(child: _buildTag(plant.difficulty, _getDifficultyColor(plant.difficulty))),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 4), // Reduced spacing
-                    Expanded(
-                      child: Text(
-                        plant.description,
-                        style: const TextStyle(
-                          fontSize: 12, // Reduced font size
-                          color: Colors.black87,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-                ),
-              ),
-            ),
+            useFlexLayout
+                ? Expanded(
+                    flex: 2,
+                    child: _buildInfoWidget(),
+                  )
+                : _buildInfoWidget(),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildImageWidget() {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(16),
+        topRight: Radius.circular(16),
+      ),
+      child: CachedNetworkImage(
+        imageUrl: plant.imageUrl,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          width: double.infinity,
+          color: Colors.grey[300],
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          width: double.infinity,
+          color: Colors.grey[300],
+          child: const Icon(
+            Icons.error,
+            color: Colors.red,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoWidget() {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            plant.name,
+            style: const TextStyle(
+              fontSize: 14, // Further reduced
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 1), // Minimal spacing
+          Text(
+            plant.scientificName,
+            style: TextStyle(
+              fontSize: 11, // Further reduced
+              fontStyle: FontStyle.italic,
+              color: Colors.grey[600],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 3), // Minimal spacing
+
+          // Plant tags
+          Row(
+            children: [
+              Flexible(child: _buildTag(plant.category, Colors.green[100]!)),
+              const SizedBox(width: 2), // Minimal spacing
+              Flexible(child: _buildTag(plant.difficulty, _getDifficultyColor(plant.difficulty))),
+            ],
+          ),
+
+          const SizedBox(height: 2), // Minimal spacing
+          Flexible(
+            child: Text(
+              plant.description,
+              style: const TextStyle(
+                fontSize: 11, // Further reduced
+                color: Colors.black87,
+              ),
+              maxLines: useFlexLayout ? 2 : 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTag(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), // Reduced padding
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1), // Even smaller padding
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8), // Smaller radius
+        borderRadius: BorderRadius.circular(6), // Smaller radius
       ),
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 10, // Smaller font
+          fontSize: 9, // Even smaller font
           fontWeight: FontWeight.w500,
         ),
         overflow: TextOverflow.ellipsis,

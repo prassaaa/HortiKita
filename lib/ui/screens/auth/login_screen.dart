@@ -6,6 +6,7 @@ import 'register_screen.dart';
 import 'package:flutter/foundation.dart';
 import '../home/home_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
+import '../../../services/user_tracking_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,6 +94,10 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
         final user = _auth.currentUser;
         if (user != null) {
           await Future.delayed(const Duration(milliseconds: 500));
+          
+          // START REAL DATA TRACKING SESSION
+          await UserTrackingService().startSession();
+          _logger.d('Real data tracking session started for user: ${user.email}');
           
           final doc = await _firestore
               .collection('users')

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_message_model.dart';
 import '../repositories/chat_repository.dart';
 import '../../services/gemini_service.dart';
@@ -14,6 +15,7 @@ class ChatProvider with ChangeNotifier {
   final Logger _logger = Logger();
   final AnalyticsService _analytics = AnalyticsService();
   final UserTrackingService _tracking = UserTrackingService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String _error = '';
@@ -148,7 +150,7 @@ class ChatProvider with ChangeNotifier {
       );
       _messages.add(aiMsg);
       
-      // Track chatbot interaction
+      // Track chatbot interaction - REAL DATA COLLECTION
       final sessionId = 'session_${userId}_${now.millisecondsSinceEpoch}';
       await _tracking.trackChatbotInteraction(
         sessionId,
@@ -156,6 +158,29 @@ class ChatProvider with ChangeNotifier {
         response,
         topics: _extractTopicsFromMessage(message),
       );
+      
+      // ALSO SAVE TO CHAT_HISTORY for analytics
+      await _firestore.collection('chat_history').add({
+        'userId': userId,
+        'sessionId': sessionId,
+        'messages': [
+          {
+            'sender': 'user',
+            'message': message.isEmpty ? 'Foto tanaman' : message,
+            'timestamp': Timestamp.fromDate(now),
+          },
+          {
+            'sender': 'ai',
+            'message': response,
+            'timestamp': Timestamp.now(),
+          }
+        ],
+        'timestamp': Timestamp.fromDate(now),
+        'createdAt': Timestamp.fromDate(now),
+        'updatedAt': Timestamp.now(),
+      });
+      
+      _logger.d('Real chat data saved to chat_history collection');
       
       // Update pesan user dalam state supaya tetap menunjukkan gambar
       if (imagePath != null) {

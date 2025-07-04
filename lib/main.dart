@@ -52,8 +52,9 @@ void main() async {
     logger.d('User already logged in: ${auth.currentUser!.email}');
     await _checkUserRole(auth.currentUser!.uid);
     
-    // Start tracking session for logged in user
+    // Start tracking session for logged in user - REAL DATA COLLECTION
     await UserTrackingService().startSession();
+    logger.d('User tracking session started for real data collection');
   } else {
     logger.d('No user logged in on app start');
   }

@@ -162,5 +162,56 @@ void main() {
       // Verify no overflow exceptions
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('PlantCard works in ListView layout without flex', (WidgetTester tester) async {
+      final plants = List.generate(2, (index) => Plant(
+        id: 'plant-$index',
+        name: 'Plant $index',
+        scientificName: 'Plantus $index',
+        category: 'Sayuran',
+        difficulty: 'Mudah',
+        description: 'Description for plant $index',
+        imageUrl: 'https://example.com/plant-$index.jpg',
+        careInstructions: [],
+        growthDuration: 30,
+        wateringFrequency: 'Daily',
+        sunlightRequirement: 'Full sun',
+        soilType: 'Well-drained',
+        harvestTime: '30 days',
+        benefits: 'Nutritious and healthy',
+        plantingSteps: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: plants.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: PlantCard(
+                    plant: plants[index],
+                    useFlexLayout: false, // Important: no flex in ListView
+                    onTap: () {},
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // Verify cards are rendered
+      expect(find.byType(PlantCard), findsAtLeastNWidgets(1));
+
+      // Verify no overflow exceptions
+      expect(tester.takeException(), isNull);
+    });
   });
 }

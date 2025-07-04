@@ -536,6 +536,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
             padding: const EdgeInsets.only(bottom: 16),
             child: PlantCard(
               plant: plant,
+              useFlexLayout: false, // Don't use Expanded in ListView
               onTap: () {
                 Navigator.push(
                   context,
@@ -650,6 +651,7 @@ class ModernPlantSearchDelegate extends SearchDelegate<String> {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: PlantCard(
                   plant: plant,
+                  useFlexLayout: false, // Don't use Expanded in ListView
                   onTap: () {
                     close(context, plant.id);
                     Navigator.push(
