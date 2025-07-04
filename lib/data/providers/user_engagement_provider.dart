@@ -41,9 +41,12 @@ class UserEngagementProvider with ChangeNotifier {
 
   /// Load user favorites
   Future<void> loadUserFavorites() async {
-    _isLoading = true;
-    _error = '';
-    notifyListeners();
+    // Only notify if state actually changes
+    if (!_isLoading) {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+    }
 
     try {
       _userFavorites = await _engagementService.getUserFavorites();
@@ -269,9 +272,12 @@ class UserEngagementProvider with ChangeNotifier {
 
   /// Load all engagement data
   Future<void> loadAllEngagementData() async {
-    _isLoading = true;
-    _error = '';
-    notifyListeners();
+    // Only notify if state actually changes
+    if (!_isLoading) {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+    }
 
     try {
       await Future.wait([

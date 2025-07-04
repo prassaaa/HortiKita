@@ -34,84 +34,92 @@ class PlantCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Plant Image
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              child: CachedNetworkImage(
-                imageUrl: plant.imageUrl,
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 150,
-                  width: double.infinity,
-                  color: Colors.grey[300],
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                errorWidget: (context, url, error) => Container(
-                  height: 150,
+                child: CachedNetworkImage(
+                  imageUrl: plant.imageUrl,
                   width: double.infinity,
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.error,
-                    color: Colors.red,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: double.infinity,
+                    color: Colors.grey[300],
+                    child: const Icon(
+                      Icons.error,
+                      color: Colors.red,
+                    ),
                   ),
                 ),
               ),
             ),
-            
+
             // Plant Info
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    plant.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8), // Reduced padding
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      plant.name,
+                      style: const TextStyle(
+                        fontSize: 16, // Reduced font size
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    plant.scientificName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey[600],
+                    const SizedBox(height: 2), // Reduced spacing
+                    Text(
+                      plant.scientificName,
+                      style: TextStyle(
+                        fontSize: 12, // Reduced font size
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Plant tags
-                  Row(
-                    children: [
-                      _buildTag(plant.category, Colors.green[100]!),
-                      const SizedBox(width: 8),
-                      _buildTag(plant.difficulty, _getDifficultyColor(plant.difficulty)),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  Text(
-                    plant.description,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
+                    const SizedBox(height: 6), // Reduced spacing
+
+                    // Plant tags
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Flexible(child: _buildTag(plant.category, Colors.green[100]!)),
+                          const SizedBox(width: 4), // Reduced spacing
+                          Flexible(child: _buildTag(plant.difficulty, _getDifficultyColor(plant.difficulty))),
+                        ],
+                      ),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+
+                    const SizedBox(height: 4), // Reduced spacing
+                    Expanded(
+                      child: Text(
+                        plant.description,
+                        style: const TextStyle(
+                          fontSize: 12, // Reduced font size
+                          color: Colors.black87,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                 ],
+                ),
               ),
             ),
           ],
@@ -122,17 +130,19 @@ class PlantCard extends StatelessWidget {
 
   Widget _buildTag(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), // Reduced padding
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8), // Smaller radius
       ),
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: 10, // Smaller font
           fontWeight: FontWeight.w500,
         ),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
     );
   }

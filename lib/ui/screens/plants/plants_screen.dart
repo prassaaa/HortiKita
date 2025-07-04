@@ -299,7 +299,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.2,
+              childAspectRatio: 0.75, // Match the main grid
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => _buildLoadingCard(),
@@ -505,7 +505,7 @@ class PlantsScreenState extends State<PlantsScreen> with TickerProviderStateMixi
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.2,
+        childAspectRatio: 0.75, // Adjusted for better fit
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {

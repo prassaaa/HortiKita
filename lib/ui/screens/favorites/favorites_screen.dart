@@ -34,7 +34,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadFavoriteContent();
+    // Defer loading until after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFavoriteContent();
+    });
   }
 
   @override
@@ -222,7 +225,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.65, // Reduced to give more height
               ),
               itemCount: _favoritePlants.length,
               itemBuilder: (context, index) {
