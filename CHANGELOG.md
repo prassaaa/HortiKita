@@ -12,6 +12,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Weather integration for location-based advice (planned)
 - Community forum features (planned)
 
+## [1.1.0] - 2025-01-12
+
+### 🔑 Admin Access Enhancement
+
+This minor release improves the admin user experience by removing email verification requirements for administrative accounts.
+
+#### ✨ Added
+- **Admin Email Bypass**: Admin users can now access dashboard without email verification
+- **Role-Based Authentication**: Enhanced authentication flow with role-specific routing
+- **Admin Test Screen**: Development tool for testing admin account creation and access
+- **Improved Logging**: Better debugging information for authentication flow
+
+#### 🔧 Changed
+- **Authentication Logic**: Reorganized auth flow to prioritize role checking
+- **Session Management**: Updated tracking session logic for admin users
+- **SplashScreen**: Enhanced startup logic for role-based navigation
+- **LoginScreen**: Improved login flow with admin privilege handling
+
+#### 🐛 Fixed
+- **BuildContext Warnings**: Resolved async BuildContext usage warnings
+- **Navigation Issues**: Fixed navigation flow for admin users
+- **License Format**: Corrected LICENSE file to standard plain text format
+- **Documentation Links**: Updated all GitHub repository URLs
+
+#### 📚 Documentation
+- **Professional README**: Comprehensive documentation upgrade (500+ lines)
+- **Contributing Guide**: Detailed contribution guidelines and best practices
+- **Legal Information**: Separate LEGAL.md with detailed attributions
+- **Troubleshooting Guide**: Complete troubleshooting documentation
+- **Security Documentation**: Enhanced security implementation guides
+
+#### 🔐 Security
+- **Environment Variables**: Secure API key management with validation
+- **Asset Management**: Updated to use local logo assets
+- **Error Handling**: Enhanced error handling for authentication edge cases
+
+---
+
 ## [1.0.0] - 2025-01-12
 
 ### 🎉 Initial Release

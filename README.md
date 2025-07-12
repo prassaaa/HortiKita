@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Flutter-02569B?logo=flutter&logoColor=white" alt="Flutter" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.1.0-brightgreen" alt="Version" />
   <img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" alt="Firebase" />
   <img src="https://img.shields.io/badge/AI-Gemini_2.0-4285F4?logo=google&logoColor=white" alt="Gemini AI" />
   <img src="https://img.shields.io/badge/License-MIT-blue" alt="License" />
