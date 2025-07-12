@@ -446,6 +446,8 @@ git push origin feature/amazing-feature
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
+For detailed legal information, third-party licenses, and attributions, please see [LEGAL.md](LEGAL.md).
+
 ### **Third-Party Acknowledgments**
 - **Flutter Team**: Amazing cross-platform framework
 - **Firebase**: Comprehensive backend services
@@ -464,9 +466,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ### **📚 Documentation**
 - **[Setup Guide](SECURITY_IMPLEMENTATION_GUIDE.md)**: Detailed setup instructions
-- **[API Documentation](docs/api.md)**: Backend API reference
+- **[API Documentation](docs/api.md)**: Backend API reference  
 - **[Contributing Guide](CONTRIBUTING.md)**: How to contribute
 - **[Changelog](CHANGELOG.md)**: Version history and updates
+- **[Legal Information](LEGAL.md)**: Licenses and legal details
 
 ### **🆘 Support**
 Having trouble? Check our [troubleshooting guide](docs/troubleshooting.md) or reach out to the community for help.
