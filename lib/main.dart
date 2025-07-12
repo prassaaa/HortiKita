@@ -12,6 +12,7 @@ import 'data/providers/analytics_provider.dart';
 import 'data/providers/user_engagement_provider.dart';
 import 'services/analytics_service.dart';
 import 'services/user_tracking_service.dart';
+import 'services/environment_service.dart';
 import 'ui/screens/splash/splash_screen.dart';
 import 'ui/themes/app_theme.dart';
 
@@ -29,6 +30,10 @@ final logger = Logger(
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables securely
+  await EnvironmentService.initialize();
+  
   await Firebase.initializeApp();
   
   // Initialize services
@@ -39,6 +44,11 @@ void main() async {
   Logger.level = kReleaseMode ? Level.warning : Level.debug;
   
   logger.d('Application starting in ${kReleaseMode ? "RELEASE" : "DEBUG"} mode');
+  
+  // Log environment status in development
+  if (!kReleaseMode) {
+    EnvironmentService.instance.logEnvironmentStatus();
+  }
   
   // Di mode development, periksa dan buat akun admin jika belum ada
   if (!kReleaseMode) {
@@ -94,22 +104,66 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Hapus AuthProvider karena error
-        // Kita akan menggunakan Firebase Auth langsung
-        ChangeNotifierProvider(create: (_) => ChatProvider("AIzaSyAI7gekjCmoGZksJBkSE-jf2Mm3lhdsYxc")),
-        ChangeNotifierProvider(create: (_) => PlantProvider()),
-        ChangeNotifierProvider(create: (_) => ArticleProvider()),
-        ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
-        ChangeNotifierProvider(create: (_) => UserEngagementProvider()),
-      ],
-      child: MaterialApp(
+    try {
+      final geminiApiKey = EnvironmentService.instance.geminiApiKey;
+      
+      return MultiProvider(
+        providers: [
+          // Hapus AuthProvider karena error
+          // Kita akan menggunakan Firebase Auth langsung
+          ChangeNotifierProvider(create: (_) => ChatProvider(geminiApiKey)),
+          ChangeNotifierProvider(create: (_) => PlantProvider()),
+          ChangeNotifierProvider(create: (_) => ArticleProvider()),
+          ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
+          ChangeNotifierProvider(create: (_) => UserEngagementProvider()),
+        ],
+        child: MaterialApp(
+          title: 'Hortikultura App',
+          theme: AppTheme.light,
+          debugShowCheckedModeBanner: false,
+          home: const SplashScreen(),
+        ),
+      );
+    } catch (e) {
+      logger.e('Failed to initialize app: $e');
+      
+      // Return error screen instead of crashing
+      return MaterialApp(
         title: 'Hortikultura App',
         theme: AppTheme.light,
         debugShowCheckedModeBanner: false,
-        home: const SplashScreen(),
-      ),
-    );
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Configuration Error',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Please check your .env configuration.\n\nError: $e',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 }

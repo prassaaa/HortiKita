@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/gemini_service.dart';
+import '../services/environment_service.dart';
 import 'package:logger/logger.dart';
 
 class GeminiTestScreen extends StatefulWidget {
@@ -11,10 +12,18 @@ class GeminiTestScreen extends StatefulWidget {
 
 class GeminiTestScreenState extends State<GeminiTestScreen> {
   final TextEditingController _promptController = TextEditingController();
-  final String _apiKey = "AIzaSyAI7gekjCmoGZksJBkSE-jf2Mm3lhdsYxc"; // Ganti dengan API key Anda
   final Logger _logger = Logger();
   String _response = "Respons akan muncul di sini";
   bool _isLoading = false;
+
+  String get _apiKey {
+    try {
+      return EnvironmentService.instance.geminiApiKey;
+    } catch (e) {
+      _logger.e('Failed to get Gemini API key: $e');
+      return '';
+    }
+  }
 
   Future<void> _sendPrompt() async {
     final prompt = _promptController.text.trim();
