@@ -1,7 +1,7 @@
 # 🌱 HortiKita - Smart Horticulture Companion
 
 <p align="center">
-  <img src="https://i.ibb.co.com/q3JtK37L/Screenshot-1746122151.png" alt="HortiKita App Logo" width="200" />
+  <img src="assets/images/logo.png" alt="HortiKita App Logo" width="200" />
 </p>
 
 <p align="center">
@@ -101,10 +101,10 @@ To democratize horticultural knowledge and make sustainable gardening accessible
 ## 📱 Screenshots & Demo
 
 <p align="center">
-  <img src="https://via.placeholder.com/250x500/4CAF50/FFFFFF?text=Home+Screen" alt="Home Screen" width="200" />
-  <img src="https://via.placeholder.com/250x500/2D5A27/FFFFFF?text=Plant+Database" alt="Plant Database" width="200" />
-  <img src="https://via.placeholder.com/250x500/66BB6A/FFFFFF?text=AI+Chatbot" alt="AI Chatbot" width="200" />
-  <img src="https://via.placeholder.com/250x500/388E3C/FFFFFF?text=User+Profile" alt="User Profile" width="200" />
+  <img src="assets/screenshots/home_screen.png" alt="Home Screen" width="200" />
+  <img src="assets/screenshots/plant_database.png" alt="Plant Database" width="200" />
+  <img src="assets/screenshots/ai_chatbot.png" alt="AI Chatbot" width="200" />
+  <img src="assets/screenshots/user_profile.png" alt="User Profile" width="200" />
 </p>
 
 <p align="center">
@@ -477,7 +477,7 @@ Having trouble? Check our [troubleshooting guide](docs/troubleshooting.md) or re
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/prassaaa/HortiKita/main/assets/images/logo.png" alt="HortiKita Logo" width="100" />
+  <img src="assets/images/logo.png" alt="HortiKita Logo" width="100" />
 </p>
 
 <p align="center">
