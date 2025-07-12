@@ -27,6 +27,10 @@ class AuthService {
         password: password,
       );
       
+      // Send email verification
+      await result.user!.sendEmailVerification();
+      _logger.i('Email verification sent to: $email');
+      
       // Create user profile
       await _createUserProfile(result.user!.uid, name, email);
       
@@ -90,6 +94,41 @@ class AuthService {
     } catch (e) {
       _logger.e('Error getting user model: $e');
       return null;
+    }
+  }
+  
+  // Send email verification
+  Future<void> sendEmailVerification() async {
+    if (currentUser == null) {
+      throw Exception('No user is currently logged in');
+    }
+    
+    if (currentUser!.emailVerified) {
+      throw Exception('Email is already verified');
+    }
+    
+    try {
+      await currentUser!.sendEmailVerification();
+      _logger.i('Email verification sent to: ${currentUser!.email}');
+    } catch (e) {
+      _logger.e('Error sending email verification: $e');
+      rethrow;
+    }
+  }
+  
+  // Check if email is verified
+  bool get isEmailVerified => currentUser?.emailVerified ?? false;
+  
+  // Reload user to get latest verification status
+  Future<void> reloadUser() async {
+    if (currentUser == null) return;
+    
+    try {
+      await currentUser!.reload();
+      _logger.d('User reloaded, emailVerified: ${currentUser!.emailVerified}');
+    } catch (e) {
+      _logger.e('Error reloading user: $e');
+      rethrow;
     }
   }
 }

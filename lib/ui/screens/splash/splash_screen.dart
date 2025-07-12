@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../auth/login_screen.dart';
+import '../auth/email_verification_screen.dart';
 import '../home/home_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 
@@ -132,6 +133,18 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       if (currentUser != null) {
         _logger.d('User logged in: ${currentUser.email}');
         
+        // Reload user to get latest verification status
+        await currentUser.reload();
+        final user = _auth.currentUser; // Get updated user
+        
+        // Check if email is verified
+        if (user != null && !user.emailVerified) {
+          _logger.d('Email not verified, navigating to EmailVerificationScreen');
+          if (!mounted) return;
+          _navigateWithTransition(const EmailVerificationScreen());
+          return;
+        }
+        
         try {
           final doc = await _firestore
               .collection('users')
@@ -143,7 +156,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             final role = data['role'] as String?;
             final isAdmin = role == 'admin';
             
-            _logger.d('User: ${currentUser.email}, role: $role, isAdmin: $isAdmin');
+            _logger.d('User: ${currentUser.email}, role: $role, isAdmin: $isAdmin, emailVerified: ${user?.emailVerified}');
             
             if (!mounted) return;
             

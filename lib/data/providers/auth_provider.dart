@@ -17,6 +17,7 @@ class AuthProvider with ChangeNotifier {
   UserModel? get userModel => _userModel;
   User? get currentUser => _auth.currentUser;
   bool get isLoggedIn => currentUser != null;
+  bool get isEmailVerified => currentUser?.emailVerified ?? false;
   bool get isLoading => _isLoading;
   String get error => _error;
 
@@ -148,6 +149,10 @@ class AuthProvider with ChangeNotifier {
         password: password,
       );
       
+      // Send email verification
+      await userCredential.user?.sendEmailVerification();
+      _logger.i('Email verification sent to: $email');
+      
       // Update display name
       await userCredential.user?.updateDisplayName(name);
       
@@ -163,15 +168,17 @@ class AuthProvider with ChangeNotifier {
         'updatedAt': now,
       });
       
-      // Refresh user data after some delay to ensure Firebase has propagated the changes
-      await Future.delayed(const Duration(milliseconds: 500));
-      await _fetchUserData();
+      // DON'T auto fetch user data - let verification screen handle it
+      _logger.d('User registered successfully, verification email sent');
     } catch (e) {
       _logger.e('Error during sign up: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
       rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -329,6 +336,47 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _logger.e('Error setting user as admin: $e');
       throw Exception('Failed to set user as admin: $e');
+    }
+  }
+  
+  // Send email verification
+  Future<void> sendEmailVerification() async {
+    if (currentUser == null) {
+      throw Exception('No user is currently logged in');
+    }
+    
+    if (currentUser!.emailVerified) {
+      throw Exception('Email is already verified');
+    }
+    
+    _isLoading = true;
+    _error = '';
+    notifyListeners();
+    
+    try {
+      await currentUser!.sendEmailVerification();
+      _logger.i('Email verification sent to: ${currentUser!.email}');
+    } catch (e) {
+      _logger.e('Error sending email verification: $e');
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  // Reload user to get latest verification status
+  Future<void> reloadUser() async {
+    if (currentUser == null) return;
+    
+    try {
+      await currentUser!.reload();
+      _logger.d('User reloaded, emailVerified: ${currentUser!.emailVerified}');
+      notifyListeners();
+    } catch (e) {
+      _logger.e('Error reloading user: $e');
+      rethrow;
     }
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../home/home_screen.dart';
+import 'package:logger/logger.dart';
+import 'email_verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +20,7 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
   
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -89,6 +91,10 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
           password: _passwordController.text,
         );
         
+        // Send email verification
+        await userCredential.user?.sendEmailVerification();
+        _logger.i('Email verification sent to: ${_emailController.text.trim()}');
+        
         // Update display name
         await userCredential.user?.updateDisplayName(_nameController.text.trim());
         
@@ -107,14 +113,15 @@ class RegisterScreenState extends State<RegisterScreen> with SingleTickerProvide
         if (!mounted) return;
 
         // Show success message
-        _showSuccessSnackBar('Akun berhasil dibuat! Selamat datang ${_nameController.text.trim()}');
+        _showSuccessSnackBar('Akun berhasil dibuat! Silakan verifikasi email Anda.');
 
-        // Navigasi ke HomeScreen setelah berhasil register
+        // Navigate to Email Verification Screen
         Navigator.pushReplacement(
           context,
-          _createPageRoute(const HomeScreen()),
+          _createPageRoute(const EmailVerificationScreen()),
         );
       } catch (e) {
+        _logger.e('Error during registration: $e');
         if (!mounted) return;
         _showErrorSnackBar(_getReadableErrorMessage(e));
       } finally {

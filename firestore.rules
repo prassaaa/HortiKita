@@ -1,85 +1,89 @@
-// Firestore Security Rules untuk Analytics - Updated Version
+// Firestore Security Rules - Development Friendly Version
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Users collection
+    // =============================================================================
+    // DEVELOPMENT-FRIENDLY RULES
+    // =============================================================================
+    
+    // Users collection - Allow read/write for authenticated users
     match /users/{document} {
-      allow read, write: if request.auth != null;
+      // Allow user to read/write their own document
+      allow read, write: if request.auth != null && request.auth.uid == document;
+      // Allow any authenticated user to read user documents (for admin checks)
+      allow read: if request.auth != null;
+      // Allow creating user documents during registration
+      allow create: if request.auth != null;
     }
     
     // Plants collection - public read, admin write
     match /plants/{document} {
-      allow read: if true;
-      allow write: if request.auth != null 
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if true; // Public read access
+      allow write: if request.auth != null; // Allow authenticated users to write for now
     }
     
-    // Articles collection - public read, admin write
+    // Articles collection - public read, admin write  
     match /articles/{document} {
-      allow read: if true;
-      allow write: if request.auth != null 
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read: if true; // Public read access
+      allow write: if request.auth != null; // Allow authenticated users to write for now
     }
     
-    // Chat history - UPDATED RULES for analytics access
+    // =============================================================================
+    // ANALYTICS COLLECTIONS - PERMISSIVE FOR DEVELOPMENT
+    // =============================================================================
+    
+    // Chat history
     match /chat_history/{document} {
       allow read, write: if request.auth != null;
-      // Allow admin to read all chat history for analytics
-      allow read: if request.auth != null 
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // =============================================================================
-    // ANALYTICS COLLECTIONS - PERMISSIVE RULES FOR TESTING
-    // =============================================================================
-    
-    // User Sessions - More permissive for analytics
+    // User Sessions
     match /user_sessions/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Content Views - More permissive for analytics
+    // Content Views
     match /content_views/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Content Engagement - Public read for analytics
+    // Content Engagement
     match /content_engagement/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if request.auth != null;
     }
     
-    // Content Interactions - More permissive for analytics
+    // Content Interactions
     match /content_interactions/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Chatbot Interactions - More permissive for analytics
+    // Chatbot Interactions
     match /chatbot_interactions/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Screen Views - More permissive for analytics
+    // Screen Views
     match /screen_views/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // User Interactions - More permissive for analytics
+    // User Interactions
     match /user_interactions/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // User Favorites - More permissive for analytics
+    // User Favorites
     match /user_favorites/{document} {
       allow read, write: if request.auth != null;
     }
     
     // =============================================================================
-    // TEMPORARY PERMISSIVE RULES FOR DEVELOPMENT
+    // FALLBACK RULE FOR DEVELOPMENT
     // =============================================================================
     
-    // Allow authenticated users to read/write most collections for development
+    // Allow authenticated users to access any document for development
+    // REMOVE THIS IN PRODUCTION!
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
 import 'register_screen.dart';
+import 'email_verification_screen.dart';
 import 'package:flutter/foundation.dart';
 import '../home/home_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
@@ -95,6 +96,21 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
         if (user != null) {
           await Future.delayed(const Duration(milliseconds: 500));
           
+          // Reload user to get latest verification status
+          await user.reload();
+          final updatedUser = _auth.currentUser;
+          
+          // Check if email is verified
+          if (updatedUser != null && !updatedUser.emailVerified) {
+            _logger.d('Email not verified, navigating to EmailVerificationScreen');
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              _createPageRoute(const EmailVerificationScreen()),
+            );
+            return;
+          }
+          
           // START REAL DATA TRACKING SESSION
           await UserTrackingService().startSession();
           _logger.d('Real data tracking session started for user: ${user.email}');
@@ -111,7 +127,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
             final role = data['role'] as String?;
             final isAdmin = role == 'admin';
             
-            _logger.d('User: ${user.email}, role: $role, isAdmin: $isAdmin');
+            _logger.d('User: ${user.email}, role: $role, isAdmin: $isAdmin, emailVerified: ${updatedUser?.emailVerified}');
             
             if (isAdmin) {
               _logger.d('User is admin, navigating to AdminDashboardScreen');

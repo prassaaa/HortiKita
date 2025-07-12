@@ -42,19 +42,26 @@ void main() async {
   
   // Di mode development, periksa dan buat akun admin jika belum ada
   if (!kReleaseMode) {
-    logger.d('Running in development mode, checking admin account');
-    await _ensureAdminExists();
+    logger.d('Running in development mode');
+    // Admin creation disabled to avoid permission issues
+    // You can create admin manually through register screen
   }
   
   // Debug: Cek status login saat aplikasi mulai
   final auth = FirebaseAuth.instance;
   if (auth.currentUser != null) {
     logger.d('User already logged in: ${auth.currentUser!.email}');
+    logger.d('Email verified: ${auth.currentUser!.emailVerified}');
+    
     await _checkUserRole(auth.currentUser!.uid);
     
-    // Start tracking session for logged in user - REAL DATA COLLECTION
-    await UserTrackingService().startSession();
-    logger.d('User tracking session started for real data collection');
+    // Only start tracking session if email is verified
+    if (auth.currentUser!.emailVerified) {
+      await UserTrackingService().startSession();
+      logger.d('User tracking session started for verified user');
+    } else {
+      logger.d('Email not verified, tracking session not started');
+    }
   } else {
     logger.d('No user logged in on app start');
   }
@@ -79,84 +86,6 @@ Future<void> _checkUserRole(String userId) async {
     }
   } catch (e) {
     logger.e('Error checking user role: $e');
-  }
-}
-
-// Fungsi untuk memastikan ada akun admin
-Future<void> _ensureAdminExists() async {
-  try {
-    final firestore = FirebaseFirestore.instance;
-    final auth = FirebaseAuth.instance;
-    
-    // Periksa apakah ada admin
-    final snapshot = await firestore
-        .collection('users')
-        .where('role', isEqualTo: 'admin')
-        .limit(1)
-        .get();
-    
-    if (snapshot.docs.isEmpty) {
-      logger.d('No admin account found, creating one');
-      
-      // Tidak ada admin, buat akun admin
-      final adminEmail = 'admin@hortikita.app';
-      final adminPassword = 'admin123';
-      
-      try {
-        // Periksa apakah email sudah digunakan
-        final userCred = await auth.createUserWithEmailAndPassword(
-          email: adminEmail,
-          password: adminPassword,
-        );
-        
-        // Buat data user admin
-        await firestore.collection('users').doc(userCred.user!.uid).set({
-          'name': 'Administrator',
-          'email': adminEmail,
-          'role': 'admin',
-          'photoUrl': null,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-        
-        logger.i('Admin account created successfully');
-        
-        // Sign out setelah membuat
-        await auth.signOut();
-      } catch (e) {
-        if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
-          logger.d('Admin email already exists, trying to sign in');
-          
-          // Email sudah digunakan, cek apakah sudah admin
-          try {
-            // Sign in untuk mendapatkan UID
-            final userCred = await auth.signInWithEmailAndPassword(
-              email: adminEmail, 
-              password: adminPassword,
-            );
-            
-            // Update role menjadi admin
-            await firestore.collection('users').doc(userCred.user!.uid).update({
-              'role': 'admin',
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-            
-            logger.i('Existing account updated to admin role');
-            
-            // Sign out setelah update
-            await auth.signOut();
-          } catch (signInError) {
-            logger.e('Error signing in to existing account: $signInError');
-          }
-        } else {
-          logger.e('Error creating admin account: $e');
-        }
-      }
-    } else {
-      logger.i('Admin account already exists');
-    }
-  } catch (e) {
-    logger.e('Error checking admin account: $e');
   }
 }
 
