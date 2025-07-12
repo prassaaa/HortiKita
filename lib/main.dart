@@ -63,14 +63,18 @@ void main() async {
     logger.d('User already logged in: ${auth.currentUser!.email}');
     logger.d('Email verified: ${auth.currentUser!.emailVerified}');
     
-    await _checkUserRole(auth.currentUser!.uid);
+    final userRole = await _checkUserRole(auth.currentUser!.uid);
     
-    // Only start tracking session if email is verified
-    if (auth.currentUser!.emailVerified) {
+    // Start tracking session if user is admin OR email is verified
+    if (userRole == 'admin' || auth.currentUser!.emailVerified) {
       await UserTrackingService().startSession();
-      logger.d('User tracking session started for verified user');
+      if (userRole == 'admin') {
+        logger.d('User tracking session started for admin user (no email verification required)');
+      } else {
+        logger.d('User tracking session started for verified user');
+      }
     } else {
-      logger.d('Email not verified, tracking session not started');
+      logger.d('Regular user email not verified, tracking session not started');
     }
   } else {
     logger.d('No user logged in on app start');
@@ -80,7 +84,7 @@ void main() async {
 }
 
 // Fungsi untuk memeriksa role user
-Future<void> _checkUserRole(String userId) async {
+Future<String?> _checkUserRole(String userId) async {
   try {
     final doc = await FirebaseFirestore.instance
         .collection('users')
@@ -89,13 +93,17 @@ Future<void> _checkUserRole(String userId) async {
     
     if (doc.exists) {
       final data = doc.data();
+      final role = data != null ? data['role'] as String? : null;
       logger.d('User data: $data');
-      logger.d('Is admin: ${data != null && data['role'] == 'admin'}');
+      logger.d('Is admin: ${role == 'admin'}');
+      return role;
     } else {
       logger.d('User document does not exist');
+      return null;
     }
   } catch (e) {
     logger.e('Error checking user role: $e');
+    return null;
   }
 }
 

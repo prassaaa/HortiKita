@@ -100,21 +100,6 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
           await user.reload();
           final updatedUser = _auth.currentUser;
           
-          // Check if email is verified
-          if (updatedUser != null && !updatedUser.emailVerified) {
-            _logger.d('Email not verified, navigating to EmailVerificationScreen');
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              _createPageRoute(const EmailVerificationScreen()),
-            );
-            return;
-          }
-          
-          // START REAL DATA TRACKING SESSION
-          await UserTrackingService().startSession();
-          _logger.d('Real data tracking session started for user: ${user.email}');
-          
           final doc = await _firestore
               .collection('users')
               .doc(user.uid)
@@ -129,8 +114,14 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
             
             _logger.d('User: ${user.email}, role: $role, isAdmin: $isAdmin, emailVerified: ${updatedUser?.emailVerified}');
             
+            // Admin users don't need email verification
             if (isAdmin) {
-              _logger.d('User is admin, navigating to AdminDashboardScreen');
+              _logger.d('User is admin, bypassing email verification check');
+              // START REAL DATA TRACKING SESSION for admin
+              await UserTrackingService().startSession();
+              _logger.d('Real data tracking session started for admin user: ${user.email}');
+              
+              if (!mounted) return;
               Navigator.pushReplacement(
                 context,
                 _createPageRoute(const AdminDashboardScreen()),
@@ -139,7 +130,23 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
             }
           }
           
-          _logger.d('User is not admin, navigating to HomeScreen');
+          // Check email verification for regular users only
+          if (updatedUser != null && !updatedUser.emailVerified) {
+            _logger.d('Regular user email not verified, navigating to EmailVerificationScreen');
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              _createPageRoute(const EmailVerificationScreen()),
+            );
+            return;
+          }
+          
+          // START REAL DATA TRACKING SESSION for verified regular users
+          await UserTrackingService().startSession();
+          _logger.d('Real data tracking session started for verified user: ${user.email}');
+          
+          _logger.d('User is verified regular user, navigating to HomeScreen');
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             _createPageRoute(const HomeScreen()),

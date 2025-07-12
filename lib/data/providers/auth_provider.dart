@@ -282,7 +282,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Create Admin User
+  // Create Admin User - No email verification required
   Future<void> createAdminUser(String email, String password, String name) async {
     _isLoading = true;
     _error = '';
@@ -310,6 +310,7 @@ class AuthProvider with ChangeNotifier {
         'updatedAt': now,
       });
       
+      _logger.i('Admin user created successfully - email verification not required');
       await _fetchUserData();
     } catch (e) {
       _logger.e('Error during admin creation: $e');
@@ -378,5 +379,20 @@ class AuthProvider with ChangeNotifier {
       _logger.e('Error reloading user: $e');
       rethrow;
     }
+  }
+  
+  // Check if user needs email verification (admin users don't need it)
+  bool get needsEmailVerification {
+    if (currentUser == null) return false;
+    if (currentUser!.emailVerified) return false;
+    
+    // Admin users don't need email verification
+    if (isAdmin) {
+      _logger.d('Admin user detected, email verification not required');
+      return false;
+    }
+    
+    // Regular users need email verification
+    return true;
   }
 }

@@ -137,14 +137,6 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
         await currentUser.reload();
         final user = _auth.currentUser; // Get updated user
         
-        // Check if email is verified
-        if (user != null && !user.emailVerified) {
-          _logger.d('Email not verified, navigating to EmailVerificationScreen');
-          if (!mounted) return;
-          _navigateWithTransition(const EmailVerificationScreen());
-          return;
-        }
-        
         try {
           final doc = await _firestore
               .collection('users')
@@ -160,14 +152,38 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             
             if (!mounted) return;
             
+            // Admin users don't need email verification
             if (isAdmin) {
-              _logger.d('User is admin, navigating to AdminDashboardScreen');
+              _logger.d('User is admin, bypassing email verification check');
               _navigateWithTransition(const AdminDashboardScreen());
+              return;
+            }
+            
+            // Regular users need email verification
+            if (user != null && !user.emailVerified) {
+              _logger.d('Regular user email not verified, navigating to EmailVerificationScreen');
+              if (!mounted) return;
+              _navigateWithTransition(const EmailVerificationScreen());
+              return;
+            }
+          } else {
+            // If user document doesn't exist, check email verification for safety
+            if (user != null && !user.emailVerified) {
+              _logger.d('User document not found and email not verified, navigating to EmailVerificationScreen');
+              if (!mounted) return;
+              _navigateWithTransition(const EmailVerificationScreen());
               return;
             }
           }
         } catch (e) {
           _logger.d('Error checking user role: $e');
+          // If we can't check role, fall back to email verification requirement
+          if (user != null && !user.emailVerified) {
+            _logger.d('Error checking role and email not verified, navigating to EmailVerificationScreen');
+            if (!mounted) return;
+            _navigateWithTransition(const EmailVerificationScreen());
+            return;
+          }
         }
         
         if (!mounted) return;
